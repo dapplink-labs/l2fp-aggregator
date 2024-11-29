@@ -1,0 +1,5 @@
+@openzeppelin-upgrades/=lib/openzeppelin-contracts-upgradeable/
+@openzeppelin/=lib/openzeppelin-contracts/
+manta-finality/=lib/manta-finality/src/
+mantalayer/=lib/manta-finality/lib/mantalayer/src/
+forge-std/=lib/forge-std/src/

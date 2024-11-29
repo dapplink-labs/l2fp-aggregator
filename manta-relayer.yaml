@@ -1,0 +1,36 @@
+manager:
+  db_cfg:
+    db_host: "127.0.0.1"
+    db_port: 5432
+    db_name: "manta_relayer"
+    db_user: "postgres"
+    db_password: ""
+  l1_eth_rpc: "http://127.0.0.1:8545"
+  rollup_rpc: "http://127.0.0.1:7545"
+  sdk_rpc: "127.0.0.1:9000"
+  ws_addr: "tcp://127.0.0.1:8081"
+  sign_timeout: "20s"
+  poll_interval: "30s"
+  network_timeout: "10s"
+  node_members: ""
+
+node:
+  db_cfg:
+    db_host: "127.0.0.1"
+    db_port: 5432
+    db_name: "manta_relayer1"
+    db_user: "postgres"
+    db_password: ""
+  key_path : "key.store"
+  rollup_rpc: "http://127.0.0.1:7545"
+  ws_addr: "tcp://127.0.0.1:8081"
+#  p2p_port: "8000"
+#  bootstrap_peers: "/ip4/127.0.0.1/tcp/8001/p2p/"
+#  external_ip: "127.0.0.1"
+  sign_timeout: "10s"
+  output_interval: "3s"
+
+wait_peers_full_connected: true
+l2oo_contract_address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+msm_contract_address: "0xA7918D253764E42d60C3ce2010a34d5a1e7C1398"
+l1_chain_id: 31337
