@@ -1,5 +1,5 @@
 package types
 
 type SignService interface {
-	SignStateBatch(request SignStateRequest) ([]byte, error)
+	SignMsgBatch(request SignMsgRequest) ([]byte, error)
 }

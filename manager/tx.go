@@ -39,8 +39,8 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 	gasFeeCap := calcGasFeeCap(baseFee, tip)
 
 	gasLimit, err := m.l1Client.EstimateGas(ctx, ethereum.CallMsg{
-		From:      m.from,
-		To:        &m.msmContractAddr,
+		From: m.from,
+		//To:        &m.msmContractAddr,
 		GasFeeCap: gasFeeCap,
 		GasTipCap: tip,
 		Data:      data,

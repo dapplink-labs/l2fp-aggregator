@@ -5,7 +5,7 @@ import (
 )
 
 type FinalityInterface interface {
-	StateByBlock(L2BlockNumber *big.Int) (interface{}, error)
+	SignatureByBlock(L2BlockNumber *big.Int) (interface{}, error)
 }
 
 type DRNGRpcInterface interface {

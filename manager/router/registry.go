@@ -22,25 +22,25 @@ func NewRegistry(signService types.SignService) *Registry {
 	}
 }
 
-func (registry *Registry) SignStateHandler() gin.HandlerFunc {
+func (registry *Registry) SignMsgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var request types.SignStateRequest
+		var request types.SignMsgRequest
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.JSON(http.StatusBadRequest, errors.New("invalid request body"))
 			return
 		}
-		if len(request.StateRoot.String()) == 0 {
-			c.JSON(http.StatusBadRequest, errors.New("state root must not be nil"))
+		if len(request.TxHash) == 0 || request.BlockNumber == nil || request.TxType != "" {
+			c.JSON(http.StatusBadRequest, errors.New("tx_hash, block_number and tx_type must not be nil"))
 			return
 		}
 		var signature []byte
 		var err error
 
-		signature, err = registry.signService.SignStateBatch(request)
+		signature, err = registry.signService.SignMsgBatch(request)
 
 		if err != nil {
-			c.String(http.StatusInternalServerError, "failed to sign state")
-			log.Error("failed to sign state", "error", err)
+			c.String(http.StatusInternalServerError, "failed to sign msg")
+			log.Error("failed to sign msg", "error", err)
 			return
 		}
 		if _, err = c.Writer.Write(signature); err != nil {

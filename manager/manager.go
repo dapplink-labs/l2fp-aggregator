@@ -3,19 +3,17 @@ package manager
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/eniac-x-labs/manta-relayer/bindings"
-	"github.com/eniac-x-labs/manta-relayer/client"
 	"github.com/eniac-x-labs/manta-relayer/config"
-	"github.com/eniac-x-labs/manta-relayer/database"
 	"github.com/eniac-x-labs/manta-relayer/manager/router"
 	"github.com/eniac-x-labs/manta-relayer/manager/rpc"
 	"github.com/eniac-x-labs/manta-relayer/manager/types"
+	"github.com/eniac-x-labs/manta-relayer/store"
+	"github.com/eniac-x-labs/manta-relayer/synchronizer"
 	"github.com/eniac-x-labs/manta-relayer/ws/server"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
@@ -31,7 +29,6 @@ import (
 )
 
 var (
-	errCheckedNextBlock  = errors.New("next checkpoint block is less than latest checked l2 block")
 	errNotEnoughSignNode = errors.New("not enough available nodes to sign state")
 	errNotEnoughVoteNode = errors.New("not enough available nodes to vote state")
 )
@@ -40,7 +37,7 @@ type Manager struct {
 	wg          sync.WaitGroup
 	done        chan struct{}
 	log         log.Logger
-	db          *database.DB
+	db          *store.Storage
 	wsServer    server.IWebsocketManager
 	NodeMembers []string
 	httpAddr    string
@@ -49,70 +46,42 @@ type Manager struct {
 	ctx     context.Context
 	stopped atomic.Bool
 
-	l1ChainID       uint64
-	privateKey      *ecdsa.PrivateKey
-	from            common.Address
-	l2ooContract    *bindings.L2OutputOracle
-	msmContract     *bindings.MantaServiceManager
-	msmContractAddr common.Address
-	msmABI          *abi.ABI
-	l1Client        *ethclient.Client
-	rollupClient    client.RollupClient
+	l1ChainID  uint64
+	privateKey *ecdsa.PrivateKey
+	from       common.Address
+	l1Client   *ethclient.Client
 
-	networkTimeout time.Duration
-	pollInterval   time.Duration
-	signTimeout    time.Duration
+	signTimeout time.Duration
+
+	synchronizer *synchronizer.Synchronizer
+	txMsgChan    chan store.TxMessage
 }
 
-func NewFinalityManager(ctx context.Context, db *database.DB, wsServer server.IWebsocketManager, cfg *config.Config, logger log.Logger, priv *ecdsa.PrivateKey) (*Manager, error) {
+func NewFinalityManager(ctx context.Context, db *store.Storage, wsServer server.IWebsocketManager, cfg *config.Config, shutdown context.CancelCauseFunc, logger log.Logger, priv *ecdsa.PrivateKey) (*Manager, error) {
 	nodeMemberS := strings.Split(cfg.Manager.NodeMembers, ",")
-
-	l1Client, err := client.DialEthClientWithTimeout(ctx, cfg.Manager.L1EthRpc, false)
-	if err != nil {
-		return nil, err
-	}
-	l2ooContract, err := bindings.NewL2OutputOracle(common.HexToAddress(cfg.L2ooContractAddress), l1Client)
-	if err != nil {
-		return nil, err
-	}
-	msmContract, err := bindings.NewMantaServiceManager(common.HexToAddress(cfg.MsmContractAddress), l1Client)
-	if err != nil {
-		return nil, err
-	}
-	parsed, err := bindings.MantaServiceManagerMetaData.GetAbi()
-	if err != nil {
-		return nil, err
-	}
-
-	rollupClient, err := client.DialEthClient(ctx, cfg.Manager.RollupRpc)
-	if err != nil {
-		return nil, err
-	}
 
 	service := NewFinalityService(db, logger)
 	if cfg.Manager.SdkRpc != "" {
 		go rpc.NewAndStartFinalityRpcServer(ctx, cfg.Manager.SdkRpc, service)
 	}
+	txMsgChan := make(chan store.TxMessage, 100)
+	synchronizer, err := synchronizer.NewSynchronizer(ctx, cfg, db, shutdown, logger, txMsgChan)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Manager{
-		done:            make(chan struct{}),
-		log:             logger,
-		db:              db,
-		wsServer:        wsServer,
-		NodeMembers:     nodeMemberS,
-		ctx:             ctx,
-		privateKey:      priv,
-		from:            crypto.PubkeyToAddress(priv.PublicKey),
-		l2ooContract:    l2ooContract,
-		msmContract:     msmContract,
-		msmContractAddr: common.HexToAddress(cfg.MsmContractAddress),
-		msmABI:          parsed,
-		l1ChainID:       cfg.L1ChainID,
-		l1Client:        l1Client,
-		rollupClient:    rollupClient,
-		networkTimeout:  cfg.Manager.NetworkTimeout,
-		pollInterval:    cfg.Manager.PollInterval,
-		signTimeout:     cfg.Manager.SignTimeout,
+		done:         make(chan struct{}),
+		log:          logger,
+		db:           db,
+		wsServer:     wsServer,
+		NodeMembers:  nodeMemberS,
+		ctx:          ctx,
+		privateKey:   priv,
+		from:         crypto.PubkeyToAddress(priv.PublicKey),
+		signTimeout:  cfg.Manager.SignTimeout,
+		synchronizer: synchronizer,
+		txMsgChan:    txMsgChan,
 	}, nil
 }
 
@@ -133,9 +102,10 @@ func (m *Manager) Start(ctx context.Context) error {
 		}
 	}()
 	m.httpServer = s
+	go m.synchronizer.Start()
 
 	m.wg.Add(1)
-	go m.loop()
+	go m.work()
 	m.log.Info("manager is starting......")
 	return nil
 }
@@ -143,7 +113,11 @@ func (m *Manager) Start(ctx context.Context) error {
 func (m *Manager) Stop(ctx context.Context) error {
 	close(m.done)
 	if err := m.httpServer.Shutdown(ctx); err != nil {
-		m.log.Error("Server forced to shutdown", "err", err)
+		m.log.Error("http server forced to shutdown", "err", err)
+		return err
+	}
+	if err := m.synchronizer.Close(); err != nil {
+		m.log.Error("synchronizer server forced to shutdown", "err", err)
 		return err
 	}
 	m.stopped.Store(true)
@@ -155,75 +129,64 @@ func (m *Manager) Stopped() bool {
 	return m.stopped.Load()
 }
 
-func (m *Manager) loop() {
+func (m *Manager) work() {
 	defer m.wg.Done()
 
-	ctx := m.ctx
-
-	ticker := time.NewTicker(m.pollInterval)
-	defer ticker.Stop()
 	for {
 		select {
-		case <-ticker.C:
-			output, shouldPropose, err := m.FetchNextOutputInfo(ctx)
-			if errors.Is(err, errCheckedNextBlock) {
-				//continue
-			} else if err != nil {
-				break
-			}
-			if !shouldPropose {
-				continue
-			}
-
-			if err = m.db.StateRoot.StoreStateRoot(m.db.StateRoot.BuildStateRoot(output)); err != nil {
-				m.log.Error("failed to store state root", "err", err)
-			}
-			m.log.Info(fmt.Sprintf("store state root successfully, stateroot:%s, l2block:%s", output.StateRoot, output.BlockRef))
-
-			var request types.SignStateRequest
+		case txMsg := <-m.txMsgChan:
+			var request types.SignMsgRequest
 			var signature []byte
 
-			request.StateRoot = output.StateRoot
-			request.L2BlockNumber = big.NewInt(int64(output.BlockRef.Number))
-			signature, err = m.SignStateBatch(request)
-			if errors.Is(err, errNotEnoughSignNode) || errors.Is(err, errNotEnoughVoteNode) {
-				continue
-			} else if err != nil {
-				m.log.Error("failed to sign state", "err", err)
-				break
+			request.BlockNumber = big.NewInt(int64(txMsg.BlockHeight))
+			request.TxType = txMsg.Type
+			request.TxHash = txMsg.TransactionHash
+
+			if sig, err := m.db.GetSignature(request.BlockNumber.Int64()); len(sig.Data) > 0 {
+				if err != nil {
+					m.log.Error("failed to get signature by tx hash", "tx_hash", hexutil.Encode(request.TxHash), "err", err)
+					continue
+				}
+				signature = sig.Data
+				m.log.Info("get stored signature ", "tx_hash", hexutil.Encode(request.TxHash), "sig", sig)
+			} else {
+				signature, err = m.SignMsgBatch(request)
+				if errors.Is(err, errNotEnoughSignNode) || errors.Is(err, errNotEnoughVoteNode) {
+					continue
+				} else if err != nil {
+					m.log.Error("failed to sign msg", "err", err)
+					continue
+				}
+				m.log.Info("success to sign msg", "txHash", hexutil.Encode(request.TxHash), "signature", hexutil.Encode(signature), "block_number", request.BlockNumber.Int64())
+				if err = m.db.SetSignature(store.Signature{
+					BlockNumber:     request.BlockNumber.Int64(),
+					TransactionHash: request.TxHash,
+					Data:            signature,
+					Timestamp:       time.Now().Unix(),
+				}); err != nil {
+					m.log.Error("failed to store signature", "err", err)
+					continue
+				}
 			}
 
-			m.log.Info("success to sign state", "sign", common.BytesToHash(signature))
-
-			if err = m.db.StateRoot.UpdateSignatureByStateRoot(output.StateRoot, signature); err != nil {
-				m.log.Error("failed to store signature", "block", output.BlockRef.Number, "err", err)
-				break
-			}
-
-			data, err := verifyFinalityTxData(m.msmABI, output)
-			if err != nil {
-				m.log.Error("failed to pack verify finality tx data", "err", err)
-				break
-			}
-
-			tx, err := m.craftTx(ctx, data, m.msmContractAddr)
-			if err != nil {
-				m.log.Error("failed to craft transaction options", "err", err)
-				break
-			}
-
-			err = m.l1Client.SendTransaction(ctx, tx)
-			if err != nil {
-				m.log.Error("failed to send verify finality tx", "err", err)
-				break
-			}
-
-			receipt, err := getTransactionReceipt(ctx, m.l1Client, tx.Hash())
-			if err != nil {
-				m.log.Error("failed to get verify finality transaction receipt", "err", err)
-				break
-			}
-			m.log.Info("success to send verify finality transaction", "tx_hash", receipt.TxHash.String())
+			//tx, err := m.craftTx(ctx, data, m.msmContractAddr)
+			//if err != nil {
+			//	m.log.Error("failed to craft transaction options", "err", err)
+			//	break
+			//}
+			//
+			//err = m.l1Client.SendTransaction(ctx, tx)
+			//if err != nil {
+			//	m.log.Error("failed to send verify finality tx", "err", err)
+			//	break
+			//}
+			//
+			//receipt, err := getTransactionReceipt(ctx, m.l1Client, tx.Hash())
+			//if err != nil {
+			//	m.log.Error("failed to get verify finality transaction receipt", "err", err)
+			//	break
+			//}
+			//m.log.Info("success to send verify finality transaction", "tx_hash", receipt.TxHash.String())
 
 		case <-m.done:
 			return
@@ -231,26 +194,9 @@ func (m *Manager) loop() {
 	}
 }
 
-func (m *Manager) SignStateBatch(request types.SignStateRequest) ([]byte, error) {
-	m.log.Info("received sign state request", "state_root", request.StateRoot, "l2_block_number", request.L2BlockNumber.Uint64())
+func (m *Manager) SignMsgBatch(request types.SignMsgRequest) ([]byte, error) {
+	m.log.Info("received sign request", "tx_type", request.TxType, "block_number", request.BlockNumber.Uint64(), "tx_hash", hexutil.Encode(request.TxHash))
 
-	if sig, err := m.db.StateRoot.GetSignatureByStateRoot(request.StateRoot); len(sig) > 0 {
-		if err != nil {
-			m.log.Error("failed to get state root signature by state root", "state_root", request.StateRoot, "err", err)
-			return nil, err
-		}
-		m.log.Info("get stored signature ", "state_root", request.StateRoot.String(), "sig", sig)
-
-		response := types.SignStateResponse{
-			Signature: sig,
-		}
-		responseBytes, err := json.Marshal(response)
-		if err != nil {
-			log.Error("sign state response failed to marshal !")
-			return nil, err
-		}
-		return responseBytes, nil
-	}
 	availableNodes := m.availableNodes(m.NodeMembers)
 	if len(availableNodes) < len(m.NodeMembers) {
 		return nil, errNotEnoughSignNode
@@ -260,9 +206,9 @@ func (m *Manager) SignStateBatch(request types.SignStateRequest) ([]byte, error)
 		WithAvailableNodes(availableNodes).
 		WithRequestId(randomRequestId())
 
-	var resp types.SignStateResponse
+	var resp types.SignMsgResponse
 	var signErr error
-	resp, signErr = m.sign(ctx, request, types.SignStateBatch)
+	resp, signErr = m.sign(ctx, request, types.SignMsgBatch)
 	if signErr != nil {
 		return nil, signErr
 	}
@@ -289,22 +235,4 @@ func (m *Manager) availableNodes(nodeMembers []string) []string {
 func randomRequestId() string {
 	code := fmt.Sprintf("%04v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(10000))
 	return time.Now().Format("20060102150405") + code
-}
-
-func verifyFinalityTxData(abi *abi.ABI, output *client.OutputResponse) ([]byte, error) {
-	batchHeader := bindings.IMantaServiceManagerBatchHeader{
-		FinalityRoot:          output.OutputRoot,
-		QuorumNumbers:         nil,
-		SignedStakeForQuorums: nil,
-		ReferenceBlockNumber:  uint32(output.Status.CurrentL1.Number),
-		OutputRoot:            output.OutputRoot,
-		L2BlockNumber:         big.NewInt(int64(output.BlockRef.Number)),
-		L1BlockHash:           output.Status.CurrentL1.Hash,
-		L1BlockNumber:         big.NewInt(int64(output.Status.CurrentL1.Number)),
-	}
-
-	return abi.Pack(
-		"verifyFinality",
-		batchHeader,
-	)
 }

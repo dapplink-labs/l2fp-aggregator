@@ -18,25 +18,8 @@ test:
 lint:
 	golangci-lint run ./...
 
-binding-msm:
-	$(eval temp := $(shell mktemp))
-
-	cat $(MANTA_SERVICE_MANAGER_ABI_ARTIFACT) \
-	| jq -r .bytecode.object > $(temp)
-
-	cat $(MANTA_SERVICE_MANAGER_ABI_ARTIFACT) \
-	| jq .abi \
-	| abigen --pkg bindings \
-	--abi - \
-	--out bindings/manta_service_manager.go \
-	--type MantaServiceManager \
-	--bin $(temp)
-
-	rm $(temp)
-
 .PHONY: \
 	 finality-node \
 	 clean \
 	 test \
 	 lint \
-	 binding-msm

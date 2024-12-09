@@ -10,7 +10,7 @@ import (
 )
 
 type FinalityRequest struct {
-	L2BlockNumber *big.Int `json:"l2_block_number"`
+	BlockNumber *big.Int `json:"l2_block_number"`
 }
 
 type FinalityRpcServer struct {
@@ -52,7 +52,7 @@ func NewAndStartFinalityRpcServer(ctx context.Context, address string, finality 
 
 func (s *FinalityRpcServer) Finality(req FinalityRequest, reply *interface{}) error {
 	var err error
-	*reply, err = s.StateByBlock(req.L2BlockNumber)
+	*reply, err = s.SignatureByBlock(req.BlockNumber)
 	if err != nil {
 		return err
 	}

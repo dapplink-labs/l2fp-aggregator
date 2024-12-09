@@ -42,13 +42,7 @@ Or check out the latest [release](https://github.com/eniac-x-labs/finality-node)
 
 * Import the environment variables in example.env
 
-* Improve the configuration file in finality-node.yaml
-
-* Database migration, run:
-```bash
-./manta-relayer manager-migrations
-./manta-relayer node-migrations
-```
+* Improve the configuration file in manta-relayer.yaml
 
 * start the service
 ```bash

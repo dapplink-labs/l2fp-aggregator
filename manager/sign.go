@@ -17,19 +17,19 @@ import (
 	"github.com/eniac-x-labs/manta-relayer/ws/server"
 )
 
-func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignStateResponse, error) {
+func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignMsgResponse, error) {
 	respChan := make(chan server.ResponseMsg)
 	stopChan := make(chan struct{})
 
 	if err := m.wsServer.RegisterResChannel(ctx.RequestId(), respChan, stopChan); err != nil {
 		m.log.Error("failed to register response channel at signing step", "err", err)
-		return types.SignStateResponse{}, err
+		return types.SignMsgResponse{}, err
 	}
 	m.log.Info("Registered ResChannel with requestID", "requestID", ctx.RequestId())
 
 	errSendChan := make(chan struct{})
 	responseNodes := make(map[string]struct{})
-	var validSignResponse types.SignStateResponse
+	var validSignResponse types.SignMsgResponse
 	var g2Point *sign.G2Point
 	var g2Points []*sign.G2Point
 	var g1Point *sign.G1Point
@@ -65,21 +65,15 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 							"err_message", resp.RpcResponse.Error.Message)
 						return
 					} else {
-						var signResponse types.SignStateResponse
+						var signResponse types.SignMsgResponse
 						if err := tmjson.Unmarshal(resp.RpcResponse.Result, &signResponse); err != nil {
 							m.log.Error("failed to unmarshal sign response", "err", err)
 							return
 						}
 
-						if err := m.db.Vote.StoreVote(m.db.Vote.BuildVote(signResponse.L2BlockNumber, resp.SourceNode, signResponse.Signature, signResponse.Vote)); err != nil {
-							m.log.Error("failed to store sign response", "err", err)
+						if signResponse.Vote != uint8(common.AgreeVote) {
 							return
 						}
-
-						if signResponse.Vote == uint8(common.DidNotVote) {
-							return
-						}
-
 						dG2Point, err := g2Point.Deserialize(signResponse.G2Point)
 						if err != nil {
 							m.log.Error("failed to deserialize g2Point", "err", err)
@@ -104,8 +98,10 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				if len(responseNodes) == len(m.NodeMembers) {
 					m.log.Info("received all signing responses")
 					aSign, _ := aggregateSignaturesAndG2Point(g1Points, g2Points)
-					validSignResponse = types.SignStateResponse{
-						Signature: aSign.Serialize(),
+					if aSign != nil {
+						validSignResponse = types.SignMsgResponse{
+							Signature: aSign.Serialize(),
+						}
 					}
 					return
 				}

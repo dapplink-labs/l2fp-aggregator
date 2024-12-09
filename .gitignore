@@ -26,7 +26,7 @@ go.work.sum
 .idea
 
 # Binaries for programs and plugins
-finality-node
+manta-relayer
 
 contracts/lib
 

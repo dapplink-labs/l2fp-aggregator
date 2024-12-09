@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"github.com/eniac-x-labs/manta-relayer/common/cliapp"
 	"github.com/eniac-x-labs/manta-relayer/config"
-	"github.com/eniac-x-labs/manta-relayer/database"
 	"github.com/eniac-x-labs/manta-relayer/manager"
+	"github.com/eniac-x-labs/manta-relayer/node"
 	"github.com/eniac-x-labs/manta-relayer/node/conversion"
-	"github.com/eniac-x-labs/manta-relayer/node/finality"
 	"github.com/eniac-x-labs/manta-relayer/sign"
+	"github.com/eniac-x-labs/manta-relayer/store"
 	"github.com/eniac-x-labs/manta-relayer/ws/server"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
@@ -35,12 +35,6 @@ var (
 		Usage:   "path to config file",
 		EnvVars: []string{"MANTA_RELAYER_CONFIG"},
 	}
-	MigrationsFlag = &cli.StringFlag{
-		Name:    "migrations-dir",
-		Value:   "./migrations",
-		Usage:   "path to migrations folder",
-		EnvVars: []string{"MANTA_RELAYER_MIGRATIONS_DIR"},
-	}
 	PrivateKeyFlag = &cli.StringFlag{
 		Name:    PrivateKeyFlagName,
 		Usage:   "Private Key corresponding to manta relayer",
@@ -56,7 +50,6 @@ var (
 func newCli(GitCommit string, GitDate string) *cli.App {
 	nodeFlags := []cli.Flag{ConfigFlag, PrivateKeyFlag, KeyPairFlag}
 	managerFlags := []cli.Flag{ConfigFlag, PrivateKeyFlag}
-	migrationFlags := []cli.Flag{MigrationsFlag, ConfigFlag}
 	peerIDFlags := []cli.Flag{PrivateKeyFlag}
 	return &cli.App{
 		Version:              params.VersionWithCommit(GitCommit, GitDate),
@@ -80,18 +73,6 @@ func newCli(GitCommit string, GitDate string) *cli.App {
 				Flags:       peerIDFlags,
 				Description: "Parse peer id of the key",
 				Action:      runParsePeerID,
-			},
-			{
-				Name:        "node-migrations",
-				Flags:       migrationFlags,
-				Description: "Runs the node database migrations",
-				Action:      runNodeMigration,
-			},
-			{
-				Name:        "manager-migrations",
-				Flags:       migrationFlags,
-				Description: "Runs the manager database migrations",
-				Action:      runManagerMigration,
 			},
 			{
 				Name:        "version",
@@ -148,12 +129,12 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 		}
 	}
 
-	db, err := database.NewDB(ctx.Context, cfg.Node.DBCfg)
+	db, err := store.NewStorage(cfg.Node.LevelDbFolder)
 	if err != nil {
 		return nil, err
 	}
 
-	return finality.NewFinalityNode(ctx.Context, db, privKey, keyPairs, cfg, logger)
+	return node.NewFinalityNode(ctx.Context, db, privKey, keyPairs, cfg, logger, shutdown)
 }
 
 func runManager(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecycle, error) {
@@ -176,7 +157,7 @@ func runManager(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Life
 		return nil, errors.New("need to config private key")
 	}
 
-	db, err := database.NewDB(ctx.Context, cfg.Manager.DBCfg)
+	db, err := store.NewStorage(cfg.Manager.LevelDbFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +167,7 @@ func runManager(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Life
 		return nil, err
 	}
 
-	return manager.NewFinalityManager(ctx.Context, db, wsServer, cfg, logger, privKey)
+	return manager.NewFinalityManager(ctx.Context, db, wsServer, cfg, shutdown, logger, privKey)
 }
 
 func runParsePeerID(ctx *cli.Context) error {
@@ -210,52 +191,4 @@ func runParsePeerID(ctx *cli.Context) error {
 	}
 	fmt.Println(peerId)
 	return nil
-}
-
-func runManagerMigration(ctx *cli.Context) error {
-
-	log.Info("running migrations...")
-	cfg, err := config.NewConfig(ctx.String(ConfigFlag.Name))
-	if err != nil {
-		log.Error("failed to load config", "err", err)
-		return err
-	}
-
-	db, err := database.NewDB(ctx.Context, cfg.Manager.DBCfg)
-	if err != nil {
-		return err
-	}
-
-	defer func(db *database.DB) {
-		err := db.Close()
-		if err != nil {
-			return
-		}
-	}(db)
-
-	return db.ExecuteSQLMigration(ctx.String(MigrationsFlag.Name))
-}
-
-func runNodeMigration(ctx *cli.Context) error {
-
-	log.Info("running migrations...")
-	cfg, err := config.NewConfig(ctx.String(ConfigFlag.Name))
-	if err != nil {
-		log.Error("failed to load config", "err", err)
-		return err
-	}
-
-	db, err := database.NewDB(ctx.Context, cfg.Node.DBCfg)
-	if err != nil {
-		return err
-	}
-
-	defer func(db *database.DB) {
-		err := db.Close()
-		if err != nil {
-			return
-		}
-	}(db)
-
-	return db.ExecuteSQLMigration(ctx.String(MigrationsFlag.Name))
 }

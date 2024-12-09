@@ -3,8 +3,8 @@ package manager
 import (
 	"encoding/json"
 	"errors"
-	"github.com/eniac-x-labs/manta-relayer/database"
 	"github.com/eniac-x-labs/manta-relayer/manager/sdk"
+	"github.com/eniac-x-labs/manta-relayer/store"
 	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 )
@@ -12,36 +12,34 @@ import (
 var NotVerifiedBlock = errors.New("the manager has not verified this block")
 
 type FinalityService struct {
-	db  *database.DB
+	db  *store.Storage
 	log log.Logger
 }
 
-func NewFinalityService(db *database.DB, logger log.Logger) *FinalityService {
+func NewFinalityService(db *store.Storage, logger log.Logger) *FinalityService {
 	return &FinalityService{
 		db:  db,
 		log: logger,
 	}
 }
 
-func (f *FinalityService) StateByBlock(L2BlockNumber *big.Int) (interface{}, error) {
-	state, err := f.db.StateRoot.StateRootByL2Block(L2BlockNumber)
+func (f *FinalityService) SignatureByBlock(BlockNumber *big.Int) (interface{}, error) {
+	signature, err := f.db.GetSignature(BlockNumber.Int64())
 	if err != nil {
-		f.log.Error("failed to get state root by l2 block number", "err", err)
+		f.log.Error("failed to get signature by block number", "err", err)
 		return nil, err
 	}
 	var bRre []byte
-	if state == nil {
-		f.log.Warn("the manager has not verified this block", "blockNum", L2BlockNumber)
+	if signature.Data == nil {
+		f.log.Warn("the manager has not verified this block", "blockNumber", BlockNumber.Int64())
 		bRre, err = json.Marshal(sdk.SdkResponse{
-			StateRoot:   nil,
-			IsFinalized: 0,
-			Message:     NotVerifiedBlock.Error(),
+			Signature: nil,
+			Message:   NotVerifiedBlock.Error(),
 		})
 	} else {
 		bRre, err = json.Marshal(sdk.SdkResponse{
-			StateRoot:   &state.StateRoot,
-			IsFinalized: state.IsFinalized,
-			Message:     "successful",
+			Signature: signature.Data,
+			Message:   "successful",
 		})
 	}
 	if err != nil {

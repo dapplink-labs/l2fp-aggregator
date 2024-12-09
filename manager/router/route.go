@@ -12,7 +12,7 @@ func (registry *Registry) Register(r *gin.Engine) {
 	})
 
 	v1Router := r.Group("/api/v1")
-	v1Router.POST("/sign/state", registry.SignStateHandler())
+	v1Router.POST("/sign/state", registry.SignMsgHandler())
 	v1Router.GET("/metrics", registry.PrometheusHandler())
 
 }

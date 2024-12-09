@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"net/rpc"
 
@@ -14,9 +13,8 @@ type FinalitySDK struct {
 }
 
 type SdkResponse struct {
-	StateRoot   *common.Hash `json:"state_root"`
-	IsFinalized uint8        `json:"is_finalized"`
-	Message     string       `json:"message"`
+	Signature []byte `json:"signature"`
+	Message   string `json:"message"`
 }
 
 func NewFinalitySDK(addr string) (_rpc.FinalityInterface, error) {
@@ -28,10 +26,10 @@ func NewFinalitySDK(addr string) (_rpc.FinalityInterface, error) {
 	return &FinalitySDK{client}, nil
 }
 
-func (f *FinalitySDK) StateByBlock(block *big.Int) (interface{}, error) {
+func (f *FinalitySDK) SignatureByBlock(block *big.Int) (interface{}, error) {
 	var res interface{}
 	err := f.Call("FinalityRpcServer.Finality", _rpc.FinalityRequest{
-		L2BlockNumber: block,
+		BlockNumber: block,
 	}, &res)
 	return &res, err
 }

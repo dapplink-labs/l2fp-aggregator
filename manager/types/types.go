@@ -2,13 +2,13 @@ package types
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 )
 
-type SignStateRequest struct {
-	L2BlockNumber *big.Int    `json:"l2_block_number"`
-	StateRoot     common.Hash `json:"state_root"`
+type SignMsgRequest struct {
+	BlockNumber *big.Int `json:"block_number"`
+	TxHash      []byte   `json:"tx_hash"`
+	TxType      string   `json:"tx_type"`
 }
 
 type NodeSignRequest struct {
@@ -17,7 +17,7 @@ type NodeSignRequest struct {
 	RequestBody interface{} `json:"request_body"`
 }
 
-type SignStateResponse struct {
+type SignMsgResponse struct {
 	Signature     []byte   `json:"signature"`
 	G2Point       []byte   `json:"g2_point"`
 	L2BlockNumber *big.Int `json:"l2_block_number"`
@@ -27,7 +27,7 @@ type SignStateResponse struct {
 type Method string
 
 const (
-	SignStateBatch Method = "signStateBatch"
+	SignMsgBatch Method = "signMsgBatch"
 )
 
 func (m Method) String() string {
