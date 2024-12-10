@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/eniac-x-labs/manta-relayer/common/cliapp"
@@ -184,11 +185,13 @@ func runParsePeerID(ctx *cli.Context) error {
 	} else {
 		return errors.New("pri-key needs to be specified")
 	}
+	pubkeyHex := hex.EncodeToString(publicBz)
+	fmt.Println(fmt.Sprintf("pub key is (%s)", pubkeyHex))
 
 	peerId, err := conversion.GetPeerIDFromSecp256PubKey(publicBz)
 	if err != nil {
 		return err
 	}
-	fmt.Println(peerId)
+	fmt.Println(fmt.Sprintf("peerId is (%s)", peerId))
 	return nil
 }
