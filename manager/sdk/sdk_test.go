@@ -12,7 +12,7 @@ func TestGetBabyMsgByBlock(t *testing.T) {
 	sdk, err := NewFinalitySDK("localhost:9000")
 	ast.NoError(err)
 	ast.NotNil(sdk)
-	block := big.NewInt(33)
+	block := big.NewInt(31)
 	res, err := sdk.SignatureByBlock(block)
 	ast.NoError(err)
 	ast.NotNil(res)

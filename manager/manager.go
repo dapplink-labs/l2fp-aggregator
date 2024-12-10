@@ -86,6 +86,22 @@ func NewFinalityManager(ctx context.Context, db *store.Storage, wsServer server.
 }
 
 func (m *Manager) Start(ctx context.Context) error {
+	waitNodeTicker := time.NewTicker(3 * time.Second)
+	var done bool
+	for !done {
+		select {
+		case <-waitNodeTicker.C:
+			availableNodes := m.availableNodes(m.NodeMembers)
+			if len(availableNodes) < len(m.NodeMembers) {
+				m.log.Warn("wait node to connect", "availableNodesNum", len(availableNodes), "connectedNodeNum", len(m.NodeMembers))
+				continue
+			} else {
+				done = true
+				break
+			}
+		}
+	}
+
 	registry := router.NewRegistry(m)
 	r := gin.Default()
 	registry.Register(r)
