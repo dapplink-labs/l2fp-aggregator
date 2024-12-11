@@ -3,10 +3,10 @@ manager:
   sdk_rpc: "127.0.0.1:9000"
   ws_addr: "tcp://127.0.0.1:8081"
   sign_timeout: "20s"
-  node_members: ""
+  node_members: "02942c620766f9cabae6e7bac039d7645a5e78eeba93b749b4cc2e29758b162ccc,022d459195d207f1a4e287c6ece2c2459a31bdb5be8e7100629238543aae3111a1"
 
 node:
-  level_db_folder: "node_storage1"
+  level_db_folder: "node_storage2"
   key_path : "key.store"
   ws_addr: "tcp://127.0.0.1:8081"
   sign_timeout: "10s"
@@ -15,4 +15,4 @@ node:
 wait_peers_full_connected: true
 starting_height: 1
 block_step: 10
-babylon_rpc: ""
+babylon_rpc: "http://84.247.143.254:26657"

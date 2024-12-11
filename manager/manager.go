@@ -5,6 +5,14 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"math/big"
+	"math/rand"
+	"net/http"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
 	"github.com/eniac-x-labs/manta-relayer/config"
 	"github.com/eniac-x-labs/manta-relayer/manager/router"
 	"github.com/eniac-x-labs/manta-relayer/manager/rpc"
@@ -19,13 +27,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/gin-gonic/gin"
 	"github.com/influxdata/influxdb/pkg/slices"
-	"math/big"
-	"math/rand"
-	"net/http"
-	"strings"
-	"sync"
-	"sync/atomic"
-	"time"
 )
 
 var (

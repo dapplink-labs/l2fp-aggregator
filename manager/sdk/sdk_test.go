@@ -2,9 +2,10 @@ package sdk
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"math/big"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetBabyMsgByBlock(t *testing.T) {
