@@ -22,15 +22,16 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
     }
 
     /*******************************************************************************
-                      EXTERNAL FUNCTIONS - REGISTRY COORDINATOR
+                      PUBLIC FUNCTIONS - REGISTRY COORDINATOR
     *******************************************************************************/
     function registerOperator(
         address operator,
-        PubkeyRegistrationParams calldata params
+        PubkeyRegistrationParams calldata params,
+        BN254.G1Point memory msgHash
     ) public onlyRelayerManager returns (bytes32) {
         bytes32 operatorId = getOperatorId(operator);
         if (operatorId == 0) {
-            operatorId = _registerBLSPublicKey(operator, params, _computeMessageHash(operator));
+            operatorId = _registerBLSPublicKey(operator, params, msgHash);
             operators.push(operator);
             _updateAggregatedPubkey(params.pubkeyG2, true);
         }
@@ -74,6 +75,13 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         emit FinalityNodeUnjailed(operator, block.timestamp);
     }
 
+    function pubkeyRegistrationMessageHash(address operator) public view returns (BN254.G1Point memory) {
+        return BN254.hashToG1(
+            _hashTypedDataV4(
+                keccak256(abi.encode(PUBKEY_REGISTRATION_TYPEHASH, operator))
+            )
+        );
+    }
     /*******************************************************************************
                             INTERNAL FUNCTIONS
     *******************************************************************************/
@@ -142,23 +150,27 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
                 );
             }
         } else {
-            _aggregatedPubkey = BN254.G2Point(
-                [_aggregatedPubkey.X[0] - pubkey.X[0], _aggregatedPubkey.X[1] - pubkey.X[1]],
-                [_aggregatedPubkey.Y[0] - pubkey.Y[0], _aggregatedPubkey.Y[1] - pubkey.Y[1]]
-            );
+            if (operators.length == 1) {
+                _aggregatedPubkey = BN254.G2Point(
+                    [uint256(0), uint256(0)],
+                    [uint256(0), uint256(0)]
+                );
+            } else {
+                require(
+                    _aggregatedPubkey.X[0] >= pubkey.X[0] && _aggregatedPubkey.X[1] >= pubkey.X[1] &&
+                    _aggregatedPubkey.Y[0] >= pubkey.Y[0] && _aggregatedPubkey.Y[1] >= pubkey.Y[1],
+                    "BLSApkRegistry._updateAggregatedPubkey: underflow"
+                );
+                _aggregatedPubkey = BN254.G2Point(
+                    [_aggregatedPubkey.X[0] - pubkey.X[0], _aggregatedPubkey.X[1] - pubkey.X[1]],
+                    [_aggregatedPubkey.Y[0] - pubkey.Y[0], _aggregatedPubkey.Y[1] - pubkey.Y[1]]
+                );
+            }
         }
     }
     /*******************************************************************************
                             VIEW FUNCTIONS
     *******************************************************************************/
-    function _computeMessageHash(address operator) public view returns (BN254.G1Point memory) {
-        return BN254.hashToG1(
-            _hashTypedDataV4(
-                keccak256(abi.encode(PUBKEY_REGISTRATION_TYPEHASH, operator))
-            )
-        );
-    }
-
     function getRegisteredPubkey(address operator) public view returns (BN254.G1Point memory, bytes32) {
         BN254.G1Point memory pubkey = operatorToPubkey[operator];
         bytes32 pubkeyHash = operatorToPubkeyHash[operator];

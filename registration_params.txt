@@ -14,8 +14,8 @@
                 ]
             }),
             pubkeyRegistrationSignature: BN254.G1Point({
-                X: 0x1833928852416d9064f9ffb8f0c1040e04694c2c48b548e6d4e2c296a31b5878,
-                Y: 0x1d76457206bac288e208f92cd85eb1e7d1c36634972c549fa16c93d9518b37d7
+                X: 0x41cdccfcb3af5074ee171d43e36561b6025e9781f6074690cac93cc323a4351,
+                Y: 0x139dd6c50a2238d20b21576d62baaf6e86c0f5e863c0c828ea47f0b781eb5820
             })
         });
 
@@ -36,7 +36,7 @@
                 ]
             }),
             pubkeyRegistrationSignature: BN254.G1Point({
-                X: 0x1c3854e8ae220514d41b18bd590694ea4b92b02b1eb389810bf1939ff13536b1,
-                Y: 0x15347c5d0e78978857769333a012388b3c265a02a1b96f28bbdff1291549a1fe
+                X: 0x7514c888428aad26f4b712e152ec33016f28d2e9d38cdc9bbe6cb1867227a3c,
+                Y: 0x1c15f2d4b9e5c5fff4dd4f15c5bd5cf3b13db289ce9a22b18a28d77fc077748e
             })
         });

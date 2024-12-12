@@ -41,15 +41,19 @@ interface IBLSApkRegistry {
      * @notice 注册操作者
      * @param operator 操作者地址
      * @param params 公钥注册参数
+     * @param msgHash 消息哈希
+     * @return 操作者ID（公钥哈希）
      */
     function registerOperator(
         address operator,
-        PubkeyRegistrationParams calldata params
+        PubkeyRegistrationParams calldata params,
+        BN254.G1Point memory msgHash
     ) external returns (bytes32);
 
     /**
      * @notice 注销操作者
      * @param operator 操作者地址
+     * @return 操作者ID（公钥哈希）
      */
     function unRegisterOperator(
         address operator
@@ -70,34 +74,47 @@ interface IBLSApkRegistry {
     /**
      * @notice 获取操作者的注册公钥
      * @param operator 操作者地址
+     * @return 公钥和公钥哈希
      */
     function getRegisteredPubkey(address operator) external view returns (BN254.G1Point memory, bytes32);
 
     /**
      * @notice 从公钥哈希获取操作者地址
      * @param pubkeyHash 公钥哈希
+     * @return 操作者地址
      */
     function getOperatorFromPubkeyHash(bytes32 pubkeyHash) external view returns (address);
 
     /**
      * @notice 获取操作者ID
      * @param operator 操作者地址
+     * @return 操作者ID（公钥哈希）
      */
     function getOperatorId(address operator) external view returns (bytes32);
 
     /**
      * @notice 检查节点是否被监禁
      * @param operator 操作者地址
+     * @return 是否被监禁
      */
     function isNodeJailed(address operator) external view returns (bool);
 
     /**
      * @notice 获取所有操作者地址
+     * @return 操作者地址数组
      */
     function getOperators() external view returns (address[] memory);
 
     /**
      * @notice 获取聚合公钥
+     * @return 聚合公钥
      */
     function getAggregatedPubkey() external view returns (BN254.G2Point memory);
+
+    /**
+     * @notice 计算公钥注册消息哈希
+     * @param operator 操作者地址
+     * @return 消息哈希点
+     */
+    function pubkeyRegistrationMessageHash(address operator) external view returns (BN254.G1Point memory);
 }

@@ -1,7 +1,6 @@
 package sign
 
 import (
-	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // BN254Point represents a point on the BN254 curve in JSON format
@@ -57,8 +57,6 @@ func makeKeyPairFromHexString(hexKey string) (*KeyPair, error) {
 
 	return keyPair, nil
 }
-
-// GenerateRegistrationParams generates registration parameters for given private keys
 func GenerateRegistrationParams(privateKeys []string) ([]RegistrationParams, error) {
 	var params []RegistrationParams
 
@@ -73,21 +71,32 @@ func GenerateRegistrationParams(privateKeys []string) ([]RegistrationParams, err
 		pubKeyG1 := keyPair.GetPubKeyG1()
 		pubKeyG2 := keyPair.GetPubKeyG2()
 
-		// 生成消息哈希
-		// 这里我们需要哈希 G1 公钥的序列化形式
+		// // 1. 计算 G1 公钥的哈希
+		// messageHash := pubKeyG1.Hash()
+
+		// // 2. 将哈希映射到曲线上
+		// hashedPoint := MapToCurve(messageHash)
+
+		// // 3. 使用 SignHashedToCurveMessage 生成签名
+		// signature := keyPair.SignHashedToCurveMessage(&G1Point{hashedPoint})
+		// 4. 验证签名
+		// if !signature.Verify(pubKeyG2, messageHash) {
+		// 	return nil, fmt.Errorf("signature verification failed for key %d", i+1)
+		// }
+
 		pubKeyG1Bytes := pubKeyG1.Serialize()
-		// hasher := sha256.New()
-		// hasher.Write(pubKeyG1Bytes)
-		// messageHash := hasher.Sum(nil)
 
-		// // 将哈希映射到曲线上的点
-		// hashPoint := MapToCurve(*(*[32]byte)(messageHash))
+		var requestHash [32]byte
+		requestHashBytes := crypto.Keccak256(
+			pubKeyG1Bytes,
+		)
+		copy(requestHash[:], requestHashBytes)
+		signature := keyPair.SignMessage(requestHash)
+		// 4. 验证签名
+		if !signature.Verify(pubKeyG2, requestHash) {
+			return nil, fmt.Errorf("signature verification failed for key %d", i+1)
+		}
 
-		// // 使用私钥对哈希点进行签名
-		// signature := new(bn254.G1Affine).ScalarMultiplication(hashPoint, keyPair.PrivKey.BigInt(new(big.Int)))
-
-		signature := keyPair.SignMessage(sha256.Sum256(pubKeyG1Bytes))
-		// 创建参数对象
 		param := RegistrationParams{
 			PubkeyG1: BN254Point{
 				X: fmt.Sprintf("0x%x", pubKeyG1.X.BigInt(new(big.Int))),
