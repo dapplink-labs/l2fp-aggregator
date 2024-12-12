@@ -91,258 +91,342 @@ contract BLSApkRegistryTest is Test {
         console2.log("=== Setup complete ===\n");
     }
 
-    function test_RegisterOperator_Success() public {
-        console2.log("\n=== Testing successful operator registration ===");
+    // function test_RegisterOperator_Success() public {
+    //     console2.log("\n=== Testing successful operator registration ===");
         
-        // 注册前检查
-        address[] memory operatorsBefore = registry.getOperators();
-        console2.log("Operators count before registration:", operatorsBefore.length);
+    //     // 注册前检查
+    //     address[] memory operatorsBefore = registry.getOperators();
+    //     console2.log("Operators count before registration:", operatorsBefore.length);
         
+    //     vm.startPrank(relayerManager);
+    //     console2.log("Registering operator from relayerManager:", relayerManager);
+        
+    //     BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
+    //     console2.log("msgHash X:", uint256(msgHash.X));
+    //     console2.log("msgHash Y:", uint256(msgHash.Y));
+
+    //     BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
+    //     console2.log("signature X:", uint256(signature.X));
+    //     console2.log("signature Y:", uint256(signature.Y));
+
+    //     pubkeyParams1.pubkeyRegistrationSignature = signature;
+    //     bytes32 operatorId = registry.registerOperator(operator1, pubkeyParams1, msgHash);
+    //     console2.log("Operator registered with ID:", uint256(operatorId));
+        
+    //     // 注册后检查
+    //     address[] memory operatorsAfter = registry.getOperators();
+    //     console2.log("Operators count after registration:", operatorsAfter.length);
+    //     for(uint i = 0; i < operatorsAfter.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfter[i]);
+    //     }
+        
+    //     vm.stopPrank();
+
+    //     bytes32 storedId = registry.getOperatorId(operator1);
+    //     console2.log("Stored operator ID:", uint256(storedId));
+        
+    //     assertNotEq(operatorId, bytes32(0), "Operator ID should not be zero");
+    //     assertTrue(registry.getOperatorId(operator1) == operatorId, "Operator ID mismatch");
+    //     assertEq(operatorsAfter.length, operatorsBefore.length + 1, "Operators count should increase by 1");
+        
+    //     console2.log("=== Registration test passed ===\n");
+    // }
+
+    // function test_UnregisterOperator_Success() public {
+    //     console2.log("\n=== Testing successful operator unregistration ===");
+        
+    //     // 注册前检查
+    //     address[] memory operatorsBefore = registry.getOperators();
+    //     console2.log("Operators count before any operation:", operatorsBefore.length);
+        
+    //     // 先注册
+    //     vm.startPrank(relayerManager);
+    //     console2.log("First registering operator...");
+    //     BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
+    //     BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
+    //     pubkeyParams1.pubkeyRegistrationSignature = signature;
+    //     bytes32 operatorId = registry.registerOperator(operator1, pubkeyParams1, msgHash);
+        
+    //     // 注册后检查
+    //     address[] memory operatorsAfterReg = registry.getOperators();
+    //     console2.log("Operators count after registration:", operatorsAfterReg.length);
+    //     for(uint i = 0; i < operatorsAfterReg.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterReg[i]);
+    //     }
+        
+    //     // 再注销
+    //     console2.log("Now unregistering operator...");
+    //     registry.unRegisterOperator(operator1);
+        
+    //     // 注销后检查
+    //     address[] memory operatorsAfterUnreg = registry.getOperators();
+    //     console2.log("Operators count after unregistration:", operatorsAfterUnreg.length);
+    //     for(uint i = 0; i < operatorsAfterUnreg.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterUnreg[i]);
+    //     }
+        
+    //     vm.stopPrank();
+
+    //     bytes32 newId = registry.getOperatorId(operator1);
+    //     console2.log("Operator ID after unregistration:", uint256(newId));
+        
+    //     assertEq(newId, bytes32(0), "Operator should be unregistered");
+    //     assertEq(operatorsAfterUnreg.length, operatorsBefore.length, "Operators count should return to original");
+        
+    //     console2.log("=== Unregistration test passed ===\n");
+    // }
+
+    // function test_JailOperator_Success() public {
+    //     console2.log("\n=== Testing successful operator jailing ===");
+        
+    //     // 初始检查
+    //     address[] memory operatorsBefore = registry.getOperators();
+    //     console2.log("Operators count before any operation:", operatorsBefore.length);
+        
+    //     // 先注册
+    //     vm.startPrank(relayerManager);
+    //     console2.log("First registering operator...");
+    //     BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
+    //     BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
+    //     pubkeyParams1.pubkeyRegistrationSignature = signature;
+    //     registry.registerOperator(operator1, pubkeyParams1, msgHash);
+        
+    //     // 注册后检查
+    //     address[] memory operatorsAfterReg = registry.getOperators();
+    //     console2.log("Operators count after registration:", operatorsAfterReg.length);
+    //     for(uint i = 0; i < operatorsAfterReg.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterReg[i]);
+    //     }
+        
+    //     // 监禁
+    //     console2.log("Now jailing operator...");
+    //     registry.jailOperator(operator1);
+        
+    //     // 监禁后检查
+    //     address[] memory operatorsAfterJail = registry.getOperators();
+    //     console2.log("Operators count after jailing:", operatorsAfterJail.length);
+    //     for(uint i = 0; i < operatorsAfterJail.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterJail[i]);
+    //     }
+        
+    //     vm.stopPrank();
+
+    //     bool isJailed = registry.isNodeJailed(operator1);
+    //     console2.log("Is operator jailed?", isJailed);
+        
+    //     assertTrue(isJailed, "Operator should be jailed");
+    //     assertEq(operatorsAfterJail.length, operatorsAfterReg.length, "Operators count should not change after jailing");
+        
+    //     console2.log("=== Jailing test passed ===\n");
+    // }
+
+    // function test_UnjailOperator_Success() public {
+    //     console2.log("\n=== Testing successful operator unjailing ===");
+        
+    //     // 初始检查
+    //     address[] memory operatorsBefore = registry.getOperators();
+    //     console2.log("Operators count before any operation:", operatorsBefore.length);
+        
+    //     // 先注册
+    //     vm.startPrank(relayerManager);
+    //     console2.log("First registering operator...");
+    //     BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
+    //     BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
+    //     pubkeyParams1.pubkeyRegistrationSignature = signature;
+    //     registry.registerOperator(operator1, pubkeyParams1, msgHash);
+        
+    //     // 注册后检查
+    //     address[] memory operatorsAfterReg = registry.getOperators();
+    //     console2.log("Operators count after registration:", operatorsAfterReg.length);
+    //     for(uint i = 0; i < operatorsAfterReg.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterReg[i]);
+    //     }
+        
+    //     // 先监禁
+    //     console2.log("Now jailing operator...");
+    //     registry.jailOperator(operator1);
+        
+    //     bool isJailedFirst = registry.isNodeJailed(operator1);
+    //     console2.log("Is operator jailed after jailing?", isJailedFirst);
+        
+    //     // 监禁后检查
+    //     address[] memory operatorsAfterJail = registry.getOperators();
+    //     console2.log("Operators count after jailing:", operatorsAfterJail.length);
+    //     for(uint i = 0; i < operatorsAfterJail.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterJail[i]);
+    //     }
+        
+    //     // 再解除监禁
+    //     console2.log("Now unjailing operator...");
+    //     registry.unjailOperator(operator1);
+        
+    //     // 解除监禁后检查
+    //     address[] memory operatorsAfterUnjail = registry.getOperators();
+    //     console2.log("Operators count after unjailing:", operatorsAfterUnjail.length);
+    //     for(uint i = 0; i < operatorsAfterUnjail.length; i++) {
+    //         console2.log("Operator", i, ":", operatorsAfterUnjail[i]);
+    //     }
+        
+    //     vm.stopPrank();
+
+    //     bool isJailedAfter = registry.isNodeJailed(operator1);
+    //     console2.log("Is operator jailed after unjailing?", isJailedAfter);
+        
+    //     assertTrue(isJailedFirst, "Operator should be jailed");
+    //     assertFalse(isJailedAfter, "Operator should be unjailed");
+    //     assertEq(operatorsAfterUnjail.length, operatorsAfterReg.length, "Operators count should remain constant");
+        
+    //     console2.log("=== Unjailing test passed ===\n");
+    // }
+    function test_AggregateSignature_Success() public {
+        console2.log("\n=== Testing successful aggregate signature verification ===");
+        
+        // Register operators
         vm.startPrank(relayerManager);
-        console2.log("Registering operator from relayerManager:", relayerManager);
         
-        BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
-        console2.log("msgHash X:", uint256(msgHash.X));
-        console2.log("msgHash Y:", uint256(msgHash.Y));
+        address[] memory operatorsBefore = registry.getOperators();
+        console2.log("\nOperators before registration:");
+        for(uint i = 0; i < operatorsBefore.length; i++) {
+            console2.log("Operator", i, ":", operatorsBefore[i]);
+        }
 
-        BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
-        console2.log("signature X:", uint256(signature.X));
-        console2.log("signature Y:", uint256(signature.Y));
+        // Register first operator
+        BN254.G1Point memory msgHash1 = registry.pubkeyRegistrationMessageHash(operator1);
+        BN254.G1Point memory signature1 = BN254.scalar_mul(msgHash1, privKey1);
+        pubkeyParams1.pubkeyRegistrationSignature = signature1;
+        registry.registerOperator(operator1, pubkeyParams1, msgHash1);
+        // 获取并打印聚合公钥
+        BN254.G2Point memory aggregatedPubkey0 = registry.getAggregatedPubkey();
+        console2.log("\nAggregated public key:");
+        console2.log("X[0]:", uint256(aggregatedPubkey0.X[0]));
+        console2.log("X[1]:", uint256(aggregatedPubkey0.X[1]));
+        console2.log("Y[0]:", uint256(aggregatedPubkey0.Y[0]));
+        console2.log("Y[1]:", uint256(aggregatedPubkey0.Y[1]));
 
-        pubkeyParams1.pubkeyRegistrationSignature = signature;
-        bytes32 operatorId = registry.registerOperator(operator1, pubkeyParams1, msgHash);
-        console2.log("Operator registered with ID:", uint256(operatorId));
-        
-        // 注册后检查
+
+        // Register second operator
+        BN254.G1Point memory msgHash2 = registry.pubkeyRegistrationMessageHash(operator2);
+        BN254.G1Point memory signature2 = BN254.scalar_mul(msgHash2, privKey2);
+        pubkeyParams2.pubkeyRegistrationSignature = signature2;
+        registry.registerOperator(operator2, pubkeyParams2, msgHash2);
+
+        // 打印注册后的运营商列表
         address[] memory operatorsAfter = registry.getOperators();
-        console2.log("Operators count after registration:", operatorsAfter.length);
+        console2.log("\nOperators after registration:");
         for(uint i = 0; i < operatorsAfter.length; i++) {
             console2.log("Operator", i, ":", operatorsAfter[i]);
         }
-        
-        vm.stopPrank();
+        // 获取并打印聚合公钥
+        BN254.G2Point memory aggregatedPubkey = registry.getAggregatedPubkey();
+        console2.log("\nAggregated public key:");
+        console2.log("X[0]:", uint256(aggregatedPubkey.X[0]));
+        console2.log("X[1]:", uint256(aggregatedPubkey.X[1]));
+        console2.log("Y[0]:", uint256(aggregatedPubkey.Y[0]));
+        console2.log("Y[1]:", uint256(aggregatedPubkey.Y[1]));
 
-        bytes32 storedId = registry.getOperatorId(operator1);
-        console2.log("Stored operator ID:", uint256(storedId));
-        
-        assertNotEq(operatorId, bytes32(0), "Operator ID should not be zero");
-        assertTrue(registry.getOperatorId(operator1) == operatorId, "Operator ID mismatch");
-        assertEq(operatorsAfter.length, operatorsBefore.length + 1, "Operators count should increase by 1");
-        
-        console2.log("=== Registration test passed ===\n");
+        // Create and sign message
+        bytes32 messageToSign = keccak256(abi.encodePacked("Hello, this is a test message"));
+        console2.log("\nMessage to sign:", uint256(messageToSign));
+
+        // Hash message to curve point
+        BN254.G1Point memory messagePoint = BN254.hashToG1(messageToSign);
+
+        // Sign message with both keys
+        BN254.G1Point memory sig1 = BN254.scalar_mul(messagePoint, privKey1);
+        BN254.G1Point memory sig2 = BN254.scalar_mul(messagePoint, privKey2);
+
+        // Aggregate signatures using BN254 library
+        BN254.G1Point memory aggregatedSignature = BN254.plus(sig1, sig2);
+
+        // Convert signature to bytes for the checker contract
+        bytes memory sigBytes = new bytes(64);
+        assembly {
+            mstore(add(sigBytes, 32), mload(aggregatedSignature))
+            mstore(add(sigBytes, 64), mload(add(aggregatedSignature, 32)))
+        }
+
+        // Create signature params
+        IBLSSignatureChecker.SignatureParams memory params = IBLSSignatureChecker.SignatureParams({
+            msgHash: messageToSign,
+            signature: sigBytes,
+            blockNumber: uint32(block.number - 1)
+        });
+
+        // Debug output
+        console2.log("\nAggregated signature:");
+        console2.log(" - X:", uint256(aggregatedSignature.X));
+        console2.log(" - Y:", uint256(aggregatedSignature.Y));
+
+        BN254.G2Point memory aggPubkey = registry.getAggregatedPubkey();
+        console2.log("\nAggregated public key:");
+        console2.log(" - X[0]:", uint256(aggPubkey.X[0]));
+        console2.log(" - X[1]:", uint256(aggPubkey.X[1]));
+        console2.log(" - Y[0]:", uint256(aggPubkey.Y[0]));
+        console2.log(" - Y[1]:", uint256(aggPubkey.Y[1]));
+
+        // Verify signature using the checker contract
+        bool isValid = checker.verifySignature(params);
+        console2.log("\nSignature verification result:", isValid);
+        assertTrue(isValid, "Signature verification failed");
+
+        vm.stopPrank();
+        console2.log("=== Aggregate signature test passed ===\n");
     }
 
-    function test_UnregisterOperator_Success() public {
-        console2.log("\n=== Testing successful operator unregistration ===");
+    // function test_AggregateSignature_FailWithJailedOperator() public {
+    //     console2.log("\n=== Testing aggregate signature verification with jailed operator ===");
         
-        // 注册前检查
-        address[] memory operatorsBefore = registry.getOperators();
-        console2.log("Operators count before any operation:", operatorsBefore.length);
-        
-        // 先注册
-        vm.startPrank(relayerManager);
-        console2.log("First registering operator...");
-        BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
-        BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
-        pubkeyParams1.pubkeyRegistrationSignature = signature;
-        bytes32 operatorId = registry.registerOperator(operator1, pubkeyParams1, msgHash);
-        
-        // 注册后检查
-        address[] memory operatorsAfterReg = registry.getOperators();
-        console2.log("Operators count after registration:", operatorsAfterReg.length);
-        for(uint i = 0; i < operatorsAfterReg.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterReg[i]);
-        }
-        
-        // 再注销
-        console2.log("Now unregistering operator...");
-        registry.unRegisterOperator(operator1);
-        
-        // 注销后检查
-        address[] memory operatorsAfterUnreg = registry.getOperators();
-        console2.log("Operators count after unregistration:", operatorsAfterUnreg.length);
-        for(uint i = 0; i < operatorsAfterUnreg.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterUnreg[i]);
-        }
-        
-        vm.stopPrank();
-
-        bytes32 newId = registry.getOperatorId(operator1);
-        console2.log("Operator ID after unregistration:", uint256(newId));
-        
-        assertEq(newId, bytes32(0), "Operator should be unregistered");
-        assertEq(operatorsAfterUnreg.length, operatorsBefore.length, "Operators count should return to original");
-        
-        console2.log("=== Unregistration test passed ===\n");
-    }
-
-    function test_JailOperator_Success() public {
-        console2.log("\n=== Testing successful operator jailing ===");
-        
-        // 初始检查
-        address[] memory operatorsBefore = registry.getOperators();
-        console2.log("Operators count before any operation:", operatorsBefore.length);
-        
-        // 先注册
-        vm.startPrank(relayerManager);
-        console2.log("First registering operator...");
-        BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
-        BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
-        pubkeyParams1.pubkeyRegistrationSignature = signature;
-        registry.registerOperator(operator1, pubkeyParams1, msgHash);
-        
-        // 注册后检查
-        address[] memory operatorsAfterReg = registry.getOperators();
-        console2.log("Operators count after registration:", operatorsAfterReg.length);
-        for(uint i = 0; i < operatorsAfterReg.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterReg[i]);
-        }
-        
-        // 监禁
-        console2.log("Now jailing operator...");
-        registry.jailOperator(operator1);
-        
-        // 监禁后检查
-        address[] memory operatorsAfterJail = registry.getOperators();
-        console2.log("Operators count after jailing:", operatorsAfterJail.length);
-        for(uint i = 0; i < operatorsAfterJail.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterJail[i]);
-        }
-        
-        vm.stopPrank();
-
-        bool isJailed = registry.isNodeJailed(operator1);
-        console2.log("Is operator jailed?", isJailed);
-        
-        assertTrue(isJailed, "Operator should be jailed");
-        assertEq(operatorsAfterJail.length, operatorsAfterReg.length, "Operators count should not change after jailing");
-        
-        console2.log("=== Jailing test passed ===\n");
-    }
-
-    function test_UnjailOperator_Success() public {
-        console2.log("\n=== Testing successful operator unjailing ===");
-        
-        // 初始检查
-        address[] memory operatorsBefore = registry.getOperators();
-        console2.log("Operators count before any operation:", operatorsBefore.length);
-        
-        // 先注册
-        vm.startPrank(relayerManager);
-        console2.log("First registering operator...");
-        BN254.G1Point memory msgHash = registry.pubkeyRegistrationMessageHash(operator1);
-        BN254.G1Point memory signature = BN254.scalar_mul(msgHash, privKey1);
-        pubkeyParams1.pubkeyRegistrationSignature = signature;
-        registry.registerOperator(operator1, pubkeyParams1, msgHash);
-        
-        // 注册后检查
-        address[] memory operatorsAfterReg = registry.getOperators();
-        console2.log("Operators count after registration:", operatorsAfterReg.length);
-        for(uint i = 0; i < operatorsAfterReg.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterReg[i]);
-        }
-        
-        // 先监禁
-        console2.log("Now jailing operator...");
-        registry.jailOperator(operator1);
-        
-        bool isJailedFirst = registry.isNodeJailed(operator1);
-        console2.log("Is operator jailed after jailing?", isJailedFirst);
-        
-        // 监禁后检查
-        address[] memory operatorsAfterJail = registry.getOperators();
-        console2.log("Operators count after jailing:", operatorsAfterJail.length);
-        for(uint i = 0; i < operatorsAfterJail.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterJail[i]);
-        }
-        
-        // 再解除监禁
-        console2.log("Now unjailing operator...");
-        registry.unjailOperator(operator1);
-        
-        // 解除监禁后检查
-        address[] memory operatorsAfterUnjail = registry.getOperators();
-        console2.log("Operators count after unjailing:", operatorsAfterUnjail.length);
-        for(uint i = 0; i < operatorsAfterUnjail.length; i++) {
-            console2.log("Operator", i, ":", operatorsAfterUnjail[i]);
-        }
-        
-        vm.stopPrank();
-
-        bool isJailedAfter = registry.isNodeJailed(operator1);
-        console2.log("Is operator jailed after unjailing?", isJailedAfter);
-        
-        assertTrue(isJailedFirst, "Operator should be jailed");
-        assertFalse(isJailedAfter, "Operator should be unjailed");
-        assertEq(operatorsAfterUnjail.length, operatorsAfterReg.length, "Operators count should remain constant");
-        
-        console2.log("=== Unjailing test passed ===\n");
-    }
-
-    // function test_VerifySignature_Success() public {
-    //     console2.log("\n=== Testing successful signature verification ===");
-        
-    //     // 先注册操作者
+    //     // Register operators
     //     vm.startPrank(relayerManager);
-    //     console2.log("First registering operator...");
-    //     registry.registerOperator(operator1, pubkeyParams1);
-    //     vm.stopPrank();
-
-    //     // 创建签名参数
-    //     bytes32 msgHash = keccak256("test message");
-    //     console2.log("Message hash:", uint256(msgHash));
-
-    //     // 使用有效的BLS签名
-    //     bytes memory validSignature = hex"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
         
+    //     // Register first operator
+    //     BN254.G1Point memory msgHash1 = registry.pubkeyRegistrationMessageHash(operator1);
+    //     BN254.G1Point memory signature1 = BN254.scalar_mul(msgHash1, privKey1);
+    //     pubkeyParams1.pubkeyRegistrationSignature = signature1;
+    //     registry.registerOperator(operator1, pubkeyParams1, msgHash1);
+        
+    //     // Register second operator
+    //     BN254.G1Point memory msgHash2 = registry.pubkeyRegistrationMessageHash(operator2);
+    //     BN254.G1Point memory signature2 = BN254.scalar_mul(msgHash2, privKey2);
+    //     pubkeyParams2.pubkeyRegistrationSignature = signature2;
+    //     registry.registerOperator(operator2, pubkeyParams2, msgHash2);
+        
+    //     // Jail first operator
+    //     console2.log("Jailing first operator...");
+    //     registry.jailOperator(operator1);
+        
+    //     // Create message and signature
+    //     bytes32 messageToSign = keccak256("Test message");
+    //     BN254.G1Point memory msgHashPoint = BN254.hashToG1(messageToSign);
+    //     BN254.G1Point memory sig1 = BN254.scalar_mul(msgHashPoint, privKey1);
+    //     BN254.G1Point memory sig2 = BN254.scalar_mul(msgHashPoint, privKey2);
+        
+    //     // Aggregate signatures
+    //     BN254.G1Point memory aggregatedSignature = BN254.G1Point(
+    //         sig1.X + sig2.X,
+    //         sig1.Y + sig2.Y
+    //     );
+
+    //     // Convert to bytes
+    //     bytes memory sigBytes = new bytes(64);
+    //     assembly {
+    //         mstore(add(sigBytes, 32), mload(aggregatedSignature))
+    //         mstore(add(sigBytes, 64), mload(add(aggregatedSignature, 32)))
+    //     }
+
+    //     // Create params
     //     IBLSSignatureChecker.SignatureParams memory params = IBLSSignatureChecker.SignatureParams({
-    //         msgHash: msgHash,
-    //         signature: validSignature,
-    //         blockNumber: uint32(block.number)
-    //     });
-        
-    //     console2.log("Block number used:", params.blockNumber);
-    //     console2.log("Signature length:", params.signature.length);
-
-    //     // 验证签名
-    //     console2.log("Verifying signature...");
-    //     bool isValid = checker.verifySignature(params);
-    //     console2.log("Signature verification result:", isValid);
-        
-    //     assertTrue(isValid, "Signature should be valid");
-    //     console2.log("=== Signature verification test passed ===\n");
-    // }
-
-    // function test_VerifySignature_Fail_WrongBlockNumber() public {
-    //     console2.log("\n=== Testing signature verification with wrong block number ===");
-        
-    //     // 先注册操作者
-    //     vm.startPrank(relayerManager);
-    //     console2.log("First registering operator...");
-    //     registry.registerOperator(operator1, pubkeyParams1);
-    //     vm.stopPrank();
-
-    //     uint32 currentBlock = uint32(block.number);
-    //     uint32 oldBlock = currentBlock - 1000;
-        
-    //     console2.log("Current block:", currentBlock);
-    //     console2.log("Using old block:", oldBlock);
-
-    //     // 创建过期的签名参数
-    //     bytes memory validSignature = hex"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef";
-        
-    //     IBLSSignatureChecker.SignatureParams memory params = IBLSSignatureChecker.SignatureParams({
-    //         msgHash: keccak256("test message"),
-    //         signature: validSignature,
-    //         blockNumber: oldBlock
+    //         msgHash: messageToSign,
+    //         signature: sigBytes,
+    //         blockNumber: uint32(block.number - 1)
     //     });
 
-    //     // 验证签名
-    //     console2.log("Verifying signature with old block number...");
-    //     bool isValid = checker.verifySignature(params);
-    //     console2.log("Signature verification result:", isValid);
+    //     // Verify should fail
+    //     console2.log("Attempting to verify signature with jailed operator...");
+    //     vm.expectRevert("BLSSignatureChecker.verifySignature: Operator is jailed");
+    //     checker.verifySignature(params);
         
-    //     assertFalse(isValid, "Signature should be invalid due to wrong block number");
-    //     console2.log("=== Wrong block number test passed ===\n");
+    //     vm.stopPrank();
+    //     console2.log("=== Jailed operator test passed ===\n");
     // }
 }

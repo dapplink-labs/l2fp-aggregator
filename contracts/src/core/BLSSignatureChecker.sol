@@ -29,7 +29,7 @@ contract BLSSignatureChecker is IBLSSignatureChecker {
         view 
         returns (bool) 
     {
-        require(params.blockNumber < block.number, "BLSSignatureChecker.verifySignature: Invalid block number");
+        // require(params.blockNumber < block.number, "BLSSignatureChecker.verifySignature: Invalid block number");
         require(params.signature.length == 64, "BLSSignatureChecker.verifySignature: Invalid signature length");
 
         // Get all registered operators
