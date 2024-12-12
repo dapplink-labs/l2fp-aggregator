@@ -22,13 +22,13 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
     }
 
     /*******************************************************************************
-                      PUBLIC FUNCTIONS - REGISTRY COORDINATOR
+                      EXTERNAL FUNCTIONS - REGISTRY COORDINATOR
     *******************************************************************************/
     function registerOperator(
         address operator,
         PubkeyRegistrationParams calldata params,
         BN254.G1Point memory msgHash
-    ) public onlyRelayerManager returns (bytes32) {
+    ) external onlyRelayerManager returns (bytes32) {
         bytes32 operatorId = getOperatorId(operator);
         if (operatorId == 0) {
             operatorId = _registerBLSPublicKey(operator, params, msgHash);
@@ -38,7 +38,7 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         return operatorId;
     }
 
-    function unRegisterOperator(address operator) public onlyRelayerManager returns (bytes32) {
+    function unRegisterOperator(address operator) external onlyRelayerManager returns (bytes32) {
         bytes32 operatorId = getOperatorId(operator);
         require(operatorId != bytes32(0), "Operator not registered");
 
@@ -63,19 +63,19 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         return operatorId;
     }
 
-    function jailOperator(address operator) public onlyRelayerManager {
+    function jailOperator(address operator) external onlyRelayerManager {
         require(finalityNodes[operator].registeredTime != 0, "Operator not registered");
         finalityNodes[operator].isJailed = true;
         emit FinalityNodeJailed(operator, block.timestamp);
     }
 
-    function unjailOperator(address operator) public onlyRelayerManager {
+    function unjailOperator(address operator) external onlyRelayerManager {
         require(finalityNodes[operator].registeredTime != 0, "Operator not registered");
         finalityNodes[operator].isJailed = false;
         emit FinalityNodeUnjailed(operator, block.timestamp);
     }
 
-    function pubkeyRegistrationMessageHash(address operator) public view returns (BN254.G1Point memory) {
+    function pubkeyRegistrationMessageHash(address operator) external view returns (BN254.G1Point memory) {
         return BN254.hashToG1(
             _hashTypedDataV4(
                 keccak256(abi.encode(PUBKEY_REGISTRATION_TYPEHASH, operator))

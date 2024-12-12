@@ -5,41 +5,46 @@ import {BN254} from "../libraries/BN254.sol";
 import {BLSApkRegistry} from "./BLSApkRegistry.sol";
 import {IBLSSignatureChecker} from "../interfaces/IBLSSignatureChecker.sol";
 
-contract BLSSignatureChecker is IBLSSignatureChecker{
+contract BLSSignatureChecker is IBLSSignatureChecker {
     using BN254 for BN254.G1Point;
     
+    // Constants
     uint256 internal constant PAIRING_EQUALITY_CHECK_GAS = 120000;
+
+    // Immutable state variables
     BLSApkRegistry internal immutable registry;
 
     constructor(address registry_) {
         registry = BLSApkRegistry(registry_);
     }
 
+    // External functions
     /**
      * @notice Verify aggregated signature
      * @param params Signature parameters
+     * @return Verification result
      */
     function verifySignature(SignatureParams calldata params) 
         external 
         view 
         returns (bool) 
     {
-        require(params.blockNumber < block.number, "Invalid block number");
-        require(params.signature.length == 64, "Invalid signature length");
+        require(params.blockNumber < block.number, "BLSSignatureChecker.verifySignature: Invalid block number");
+        require(params.signature.length == 64, "BLSSignatureChecker.verifySignature: Invalid signature length");
 
         // Get all registered operators
         address[] memory operators = registry.getOperators();
-        require(operators.length > 0, "No registered operators");
+        require(operators.length > 0, "BLSSignatureChecker.verifySignature: No registered operators");
 
         // Verify all operators are registered and not jailed
         for(uint i = 0; i < operators.length; i++) {
             require(
                 registry.getOperatorId(operators[i]) != bytes32(0),
-                "Operator not registered"
+                "BLSSignatureChecker.verifySignature: Operator not registered"
             );
             require(
                 !registry.isNodeJailed(operators[i]),
-                "Operator is jailed"
+                "BLSSignatureChecker.verifySignature: Operator is jailed"
             );
         }
 
@@ -53,8 +58,9 @@ contract BLSSignatureChecker is IBLSSignatureChecker{
         return _verifySignature(params.msgHash, sigma, aggregatedPubkey);
     }
 
+    // Internal functions
     function _bytesToG1Point(bytes memory sig) internal pure returns (BN254.G1Point memory) {
-        require(sig.length == 64, "Invalid signature length");
+        require(sig.length == 64, "BLSSignatureChecker._bytesToG1Point: Invalid signature length");
         
         uint256 x;
         uint256 y;

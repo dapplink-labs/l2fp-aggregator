@@ -5,9 +5,9 @@ import {BN254} from "../libraries/BN254.sol";
 
 interface IBLSApkRegistry {
     struct FinalityNodeInfo {
-        BN254.G1Point pubkey;         // BLS公钥
-        bool isJailed;                // 是否监禁状态
-        uint256 registeredTime;       // 注册时间
+        BN254.G1Point pubkey;         // BLS public key
+        bool isJailed;                // Jail status
+        uint256 registeredTime;       // Registration timestamp
     }
 
     struct PubkeyRegistrationParams {
@@ -38,11 +38,11 @@ interface IBLSApkRegistry {
     );
 
     /**
-     * @notice 注册操作者
-     * @param operator 操作者地址
-     * @param params 公钥注册参数
-     * @param msgHash 消息哈希
-     * @return 操作者ID（公钥哈希）
+     * @notice Register an operator with their BLS public key
+     * @param operator Address of the operator
+     * @param params Public key registration parameters
+     * @param msgHash Message hash for signature verification
+     * @return Operator ID (public key hash)
      */
     function registerOperator(
         address operator,
@@ -51,70 +51,68 @@ interface IBLSApkRegistry {
     ) external returns (bytes32);
 
     /**
-     * @notice 注销操作者
-     * @param operator 操作者地址
-     * @return 操作者ID（公钥哈希）
+     * @notice Deregister an operator
+     * @param operator Address of the operator
+     * @return Operator ID (public key hash)
      */
-    function unRegisterOperator(
-        address operator
-    ) external returns (bytes32);
+    function unRegisterOperator(address operator) external returns (bytes32);
 
     /**
-     * @notice 监禁操作者
-     * @param operator 操作者地址
+     * @notice Jail an operator
+     * @param operator Address of the operator
      */
     function jailOperator(address operator) external;
 
     /**
-     * @notice 解除操作者监禁
-     * @param operator 操作者地址
+     * @notice Unjail an operator
+     * @param operator Address of the operator
      */
     function unjailOperator(address operator) external;
 
     /**
-     * @notice 获取操作者的注册公钥
-     * @param operator 操作者地址
-     * @return 公钥和公钥哈希
+     * @notice Get the registered public key of an operator
+     * @param operator Address of the operator
+     * @return Public key and its hash
      */
     function getRegisteredPubkey(address operator) external view returns (BN254.G1Point memory, bytes32);
 
     /**
-     * @notice 从公钥哈希获取操作者地址
-     * @param pubkeyHash 公钥哈希
-     * @return 操作者地址
+     * @notice Get operator address from public key hash
+     * @param pubkeyHash Hash of the public key
+     * @return Address of the operator
      */
     function getOperatorFromPubkeyHash(bytes32 pubkeyHash) external view returns (address);
 
     /**
-     * @notice 获取操作者ID
-     * @param operator 操作者地址
-     * @return 操作者ID（公钥哈希）
+     * @notice Get operator ID
+     * @param operator Address of the operator
+     * @return Operator ID (public key hash)
      */
     function getOperatorId(address operator) external view returns (bytes32);
 
     /**
-     * @notice 检查节点是否被监禁
-     * @param operator 操作者地址
-     * @return 是否被监禁
+     * @notice Check if a node is jailed
+     * @param operator Address of the operator
+     * @return Jail status
      */
     function isNodeJailed(address operator) external view returns (bool);
 
     /**
-     * @notice 获取所有操作者地址
-     * @return 操作者地址数组
+     * @notice Get all registered operators
+     * @return Array of operator addresses
      */
     function getOperators() external view returns (address[] memory);
 
     /**
-     * @notice 获取聚合公钥
-     * @return 聚合公钥
+     * @notice Get the aggregated public key
+     * @return Aggregated BLS public key
      */
     function getAggregatedPubkey() external view returns (BN254.G2Point memory);
 
     /**
-     * @notice 计算公钥注册消息哈希
-     * @param operator 操作者地址
-     * @return 消息哈希点
+     * @notice Calculate message hash for public key registration
+     * @param operator Address of the operator
+     * @return Message hash point
      */
     function pubkeyRegistrationMessageHash(address operator) external view returns (BN254.G1Point memory);
 }
