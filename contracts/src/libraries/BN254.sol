@@ -92,6 +92,33 @@ library BN254 {
     }
 
     /**
+     * @return r the sum of two points of G2
+     */
+    function plusG2(BN254.G2Point memory p1, BN254.G2Point memory p2) internal view returns (BN254.G2Point memory r) {
+        uint256[8] memory input;
+        input[0] = p1.X[0];
+        input[1] = p1.X[1];
+        input[2] = p1.Y[0];
+        input[3] = p1.Y[1];
+        input[4] = p2.X[0];
+        input[5] = p2.X[1];
+        input[6] = p2.Y[0];
+        input[7] = p2.Y[1];
+        bool success;
+
+        assembly {
+            success := staticcall(sub(gas(), 2000), 0x0a, input, 0x100, r, 0x80)
+            // Use "invalid" to make gas estimation work
+            switch success
+            case 0 {
+                invalid()
+            }
+        }
+
+        require(success, "ec-add-failed-g2");
+    }
+
+    /**
      * @notice an optimized ecMul implementation that takes O(log_2(s)) ecAdds
      * @param p the point to multiply
      * @param s the scalar to multiply by

@@ -6,6 +6,7 @@ import {BN254} from "../libraries/BN254.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {OwnableUpgradeable} from "@openzeppelin-upgrades/contracts/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin-upgrades/contracts/proxy/utils/Initializable.sol";
+import {console2} from "forge-std/console2.sol";
 
 contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegistryStorage {
     using BN254 for BN254.G1Point;
@@ -33,7 +34,7 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         if (operatorId == 0) {
             operatorId = _registerBLSPublicKey(operator, params, msgHash);
             operators.push(operator);
-            _updateAggregatedPubkey(params.pubkeyG2, true);
+            _updateAggregatedPubkey();
         }
         return operatorId;
     }
@@ -42,15 +43,6 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         bytes32 operatorId = getOperatorId(operator);
         require(operatorId != bytes32(0), "Operator not registered");
 
-        (BN254.G1Point memory pubkey, ) = getRegisteredPubkey(operator);
-        BN254.G2Point memory g2Pubkey = BN254.G2Point([pubkey.X, 0], [pubkey.Y, 0]);
-        _updateAggregatedPubkey(g2Pubkey, false);
-
-        delete operatorToPubkey[operator];
-        delete operatorToPubkeyHash[operator];
-        delete pubkeyHashToOperator[operatorId];
-        delete finalityNodes[operator];
-
         for (uint i = 0; i < operators.length; i++) {
             if (operators[i] == operator) {
                 operators[i] = operators[operators.length - 1];
@@ -58,6 +50,14 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
                 break;
             }
         }
+
+        delete operatorToPubkey[operator];
+        delete operatorToG2Pubkey[operator];
+        delete operatorToPubkeyHash[operator];
+        delete pubkeyHashToOperator[operatorId];
+        delete finalityNodes[operator];
+
+        _updateAggregatedPubkey();
 
         emit FinalityNodeDeregistered(operator, block.timestamp);
         return operatorId;
@@ -122,6 +122,7 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         ), "BLSApkRegistry.registerBLSPublicKey: either the G1 signature is wrong, or G1 and G2 private key do not match");
 
         operatorToPubkey[operator] = params.pubkeyG1;
+        operatorToG2Pubkey[operator] = params.pubkeyG2;
         operatorToPubkeyHash[operator] = pubkeyHash;
         pubkeyHashToOperator[pubkeyHash] = operator;
 
@@ -136,37 +137,32 @@ contract BLSApkRegistry is Initializable, EIP712, OwnableUpgradeable, BLSApkRegi
         return pubkeyHash;
     }
 
-    function _updateAggregatedPubkey(
-        BN254.G2Point memory pubkey,
-        bool isAdd
-    ) internal {
-        if (isAdd) {
-            if (operators.length == 1) {
-                _aggregatedPubkey = pubkey;
-            } else {
-                _aggregatedPubkey = BN254.G2Point(
-                    [_aggregatedPubkey.X[0] + pubkey.X[0], _aggregatedPubkey.X[1] + pubkey.X[1]],
-                    [_aggregatedPubkey.Y[0] + pubkey.Y[0], _aggregatedPubkey.Y[1] + pubkey.Y[1]]
-                );
-            }
-        } else {
-            if (operators.length == 1) {
-                _aggregatedPubkey = BN254.G2Point(
-                    [uint256(0), uint256(0)],
-                    [uint256(0), uint256(0)]
-                );
-            } else {
-                require(
-                    _aggregatedPubkey.X[0] >= pubkey.X[0] && _aggregatedPubkey.X[1] >= pubkey.X[1] &&
-                    _aggregatedPubkey.Y[0] >= pubkey.Y[0] && _aggregatedPubkey.Y[1] >= pubkey.Y[1],
-                    "BLSApkRegistry._updateAggregatedPubkey: underflow"
-                );
-                _aggregatedPubkey = BN254.G2Point(
-                    [_aggregatedPubkey.X[0] - pubkey.X[0], _aggregatedPubkey.X[1] - pubkey.X[1]],
-                    [_aggregatedPubkey.Y[0] - pubkey.Y[0], _aggregatedPubkey.Y[1] - pubkey.Y[1]]
-                );
-            }
+    function _updateAggregatedPubkey() internal {
+        if (operators.length == 0) {
+            _aggregatedPubkey = BN254.G2Point(
+                [uint256(0), uint256(0)],
+                [uint256(0), uint256(0)]
+            );
+            console2.log("\nNo operators, setting zero pubkey");
+            return;
         }
+
+        // 获取第一个操作者的公钥
+        address firstOperator = operators[0];
+        _aggregatedPubkey = operatorToG2Pubkey[firstOperator];
+
+        // 累加其他操作者的公钥
+        for (uint256 i = 1; i < operators.length; i++) {
+            address currentOperator = operators[i];
+            BN254.G2Point memory nextPubkey = operatorToG2Pubkey[currentOperator];
+            _aggregatedPubkey = BN254.plusG2(_aggregatedPubkey, nextPubkey);
+        }
+
+        console2.log("\nFinal aggregated pubkey:");
+        console2.log(" - X[0]:", uint256(_aggregatedPubkey.X[0]));
+        console2.log(" - X[1]:", uint256(_aggregatedPubkey.X[1]));
+        console2.log(" - Y[0]:", uint256(_aggregatedPubkey.Y[0]));
+        console2.log(" - Y[1]:", uint256(_aggregatedPubkey.Y[1]));
     }
     /*******************************************************************************
                             VIEW FUNCTIONS

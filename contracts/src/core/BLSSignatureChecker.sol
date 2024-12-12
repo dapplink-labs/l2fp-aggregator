@@ -18,7 +18,6 @@ contract BLSSignatureChecker is IBLSSignatureChecker {
         registry = BLSApkRegistry(registry_);
     }
 
-    // External functions
     /**
      * @notice Verify aggregated signature
      * @param params Signature parameters
@@ -29,7 +28,6 @@ contract BLSSignatureChecker is IBLSSignatureChecker {
         view 
         returns (bool) 
     {
-        // require(params.blockNumber < block.number, "BLSSignatureChecker.verifySignature: Invalid block number");
         require(params.signature.length == 64, "BLSSignatureChecker.verifySignature: Invalid signature length");
 
         // Get all registered operators
@@ -50,15 +48,23 @@ contract BLSSignatureChecker is IBLSSignatureChecker {
 
         // Extract G1 point from signature
         BN254.G1Point memory sigma = _bytesToG1Point(params.signature);
-
+        
         // Get aggregated public key from registry
         BN254.G2Point memory aggregatedPubkey = registry.getAggregatedPubkey();
 
-        // Verify signature using pairing
-        return _verifySignature(params.msgHash, sigma, aggregatedPubkey);
+        // 直接使用 safePairing 验证签名
+        (bool pairingSuccessful, bool signatureIsValid) = BN254.safePairing(
+            sigma,
+            BN254.negGeneratorG2(),
+            BN254.hashToG1(params.msgHash),
+            aggregatedPubkey,
+            PAIRING_EQUALITY_CHECK_GAS
+        );
+
+        require(pairingSuccessful, "BLSSignatureChecker.verifySignature: pairing precompile call failed");
+        return signatureIsValid;
     }
 
-    // Internal functions
     function _bytesToG1Point(bytes memory sig) internal pure returns (BN254.G1Point memory) {
         require(sig.length == 64, "BLSSignatureChecker._bytesToG1Point: Invalid signature length");
         
@@ -73,16 +79,4 @@ contract BLSSignatureChecker is IBLSSignatureChecker {
         return BN254.G1Point(x, y);
     }
 
-    function _verifySignature(
-        bytes32 msgHash,
-        BN254.G1Point memory sigma,
-        BN254.G2Point memory aggregatedPubkey
-    ) internal view returns (bool) {
-        return BN254.pairing(
-            sigma,
-            BN254.negGeneratorG2(),
-            BN254.hashToG1(msgHash),
-            aggregatedPubkey
-        );
-    }
 }

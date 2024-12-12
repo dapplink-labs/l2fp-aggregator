@@ -295,14 +295,13 @@ contract BLSApkRegistryTest is Test {
         BN254.G1Point memory signature1 = BN254.scalar_mul(msgHash1, privKey1);
         pubkeyParams1.pubkeyRegistrationSignature = signature1;
         registry.registerOperator(operator1, pubkeyParams1, msgHash1);
-        // 获取并打印聚合公钥
-        BN254.G2Point memory aggregatedPubkey0 = registry.getAggregatedPubkey();
-        console2.log("\nAggregated public key:");
-        console2.log("X[0]:", uint256(aggregatedPubkey0.X[0]));
-        console2.log("X[1]:", uint256(aggregatedPubkey0.X[1]));
-        console2.log("Y[0]:", uint256(aggregatedPubkey0.Y[0]));
-        console2.log("Y[1]:", uint256(aggregatedPubkey0.Y[1]));
 
+        BN254.G2Point memory g2Pubkey1 = registry.getOperatorG2Pubkey(operator1);
+        console2.log("\nG2 pubkey for operator1:");
+        console2.log(" - X[0]:", uint256(g2Pubkey1.X[0]));
+        console2.log(" - X[1]:", uint256(g2Pubkey1.X[1]));
+        console2.log(" - Y[0]:", uint256(g2Pubkey1.Y[0]));
+        console2.log(" - Y[1]:", uint256(g2Pubkey1.Y[1]));
 
         // Register second operator
         BN254.G1Point memory msgHash2 = registry.pubkeyRegistrationMessageHash(operator2);
@@ -310,19 +309,19 @@ contract BLSApkRegistryTest is Test {
         pubkeyParams2.pubkeyRegistrationSignature = signature2;
         registry.registerOperator(operator2, pubkeyParams2, msgHash2);
 
+        BN254.G2Point memory g2Pubkey2 = registry.getOperatorG2Pubkey(operator2);
+        console2.log("\nG2 pubkey for operator2:");
+        console2.log(" - X[0]:", uint256(g2Pubkey2.X[0]));
+        console2.log(" - X[1]:", uint256(g2Pubkey2.X[1]));
+        console2.log(" - Y[0]:", uint256(g2Pubkey2.Y[0]));
+        console2.log(" - Y[1]:", uint256(g2Pubkey2.Y[1]));
+
         // 打印注册后的运营商列表
         address[] memory operatorsAfter = registry.getOperators();
         console2.log("\nOperators after registration:");
         for(uint i = 0; i < operatorsAfter.length; i++) {
             console2.log("Operator", i, ":", operatorsAfter[i]);
         }
-        // 获取并打印聚合公钥
-        BN254.G2Point memory aggregatedPubkey = registry.getAggregatedPubkey();
-        console2.log("\nAggregated public key:");
-        console2.log("X[0]:", uint256(aggregatedPubkey.X[0]));
-        console2.log("X[1]:", uint256(aggregatedPubkey.X[1]));
-        console2.log("Y[0]:", uint256(aggregatedPubkey.Y[0]));
-        console2.log("Y[1]:", uint256(aggregatedPubkey.Y[1]));
 
         // Create and sign message
         bytes32 messageToSign = keccak256(abi.encodePacked("Hello, this is a test message"));

@@ -20,6 +20,7 @@ abstract contract BLSApkRegistryStorage is Initializable, IBLSApkRegistry {
     mapping(address => BN254.G1Point) public operatorToPubkey;
     address[] public operators;
     BN254.G2Point internal _aggregatedPubkey;
+    mapping(address => BN254.G2Point) internal operatorToG2Pubkey;
 
     // Constructor
     constructor(address relayerManager_) {
@@ -33,6 +34,10 @@ abstract contract BLSApkRegistryStorage is Initializable, IBLSApkRegistry {
 
     function getAggregatedPubkey() public view returns (BN254.G2Point memory) {
         return _aggregatedPubkey;
+    }
+
+    function getOperatorG2Pubkey(address operator) external view returns (BN254.G2Point memory) {
+        return operatorToG2Pubkey[operator];
     }
 
     uint256[100] private __GAP;
