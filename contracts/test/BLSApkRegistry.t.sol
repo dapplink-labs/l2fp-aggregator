@@ -41,7 +41,7 @@ contract BLSApkRegistryTest is Test {
         console2.log("Checker deployed at:", address(checker));
 
         // 使用配对的BLS密钥
-        pubkeyParams1 = IBLSApkRegistry.PubkeyRegistrationParams({
+                pubkeyParams1 = IBLSApkRegistry.PubkeyRegistrationParams({
             pubkeyG1: BN254.G1Point({
                 X: 0x90aa0bbe0a82ac9a119d45e0337b8957749559961b2900046876d5c0df3466b,
                 Y: 0x2c436aa1f1a8fd8e5964ecf277d3d5645483c11035b3af27f67f103492305122
@@ -57,8 +57,8 @@ contract BLSApkRegistryTest is Test {
                 ]
             }),
             pubkeyRegistrationSignature: BN254.G1Point({
-                X: 0x7959c23705248701aebf0ec0b6c754d6dc66a6ae4c5567aa5a61606b18b4e54,
-                Y: 0x684a709c321d4ea5f954c8fdafd6c625d112f0911d9c5633a13d3a3a4825855
+                X: 0x1833928852416d9064f9ffb8f0c1040e04694c2c48b548e6d4e2c296a31b5878,
+                Y: 0x1d76457206bac288e208f92cd85eb1e7d1c36634972c549fa16c93d9518b37d7
             })
         });
 
@@ -79,10 +79,11 @@ contract BLSApkRegistryTest is Test {
                 ]
             }),
             pubkeyRegistrationSignature: BN254.G1Point({
-                X: 0x250f7e5fd717a181e3c3cae5cf9a38a8dc6a6860b8bb9fc571f2098ee13e404a,
-                Y: 0x1842a76fd71918d3120658d161c8a0949d93a3714b1f20b4d399d972c46d1c4c
+                X: 0x1c3854e8ae220514d41b18bd590694ea4b92b02b1eb389810bf1939ff13536b1,
+                Y: 0x15347c5d0e78978857769333a012388b3c265a02a1b96f28bbdff1291549a1fe
             })
         });
+
 
 
 
