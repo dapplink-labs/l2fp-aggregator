@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/eniac-x-labs/manta-relayer/common/opio"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common/opio"
 )
 
 type Lifecycle interface {

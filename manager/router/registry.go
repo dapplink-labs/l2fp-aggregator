@@ -9,7 +9,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/eniac-x-labs/manta-relayer/manager/types"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
 )
 
 type Registry struct {

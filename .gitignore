@@ -28,6 +28,6 @@ go.work.sum
 # Binaries for programs and plugins
 manta-relayer
 
-contracts/lib
+l2-fp-contracts/*
 
 key.store/*

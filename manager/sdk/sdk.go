@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"net/rpc"
 
-	_rpc "github.com/eniac-x-labs/manta-relayer/manager/rpc"
+	_rpc "github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/rpc"
 	"github.com/ethereum/go-ethereum/log"
 )
 

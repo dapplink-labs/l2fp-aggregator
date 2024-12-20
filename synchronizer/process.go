@@ -3,8 +3,8 @@ package synchronizer
 import (
 	types2 "github.com/babylonlabs-io/babylon/x/btcstaking/types"
 	"github.com/babylonlabs-io/babylon/x/finality/types"
-	"github.com/eniac-x-labs/manta-relayer/common"
-	"github.com/eniac-x-labs/manta-relayer/store"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
 )
 
 func (syncer *Synchronizer) ProcessNewFinalityProvider(txMessage store.TxMessage) error {

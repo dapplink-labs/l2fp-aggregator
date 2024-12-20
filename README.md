@@ -8,17 +8,17 @@ parent:
 </div>
 
 <div align="center">
-  <a href="https://github.com/eniac-x-labs/manta-relayer/releases/latest">
-    <img alt="Version" src="https://img.shields.io/github/tag/eniac-x-labs/manta-relayer.svg" />
+  <a href="https://github.com/dapplink-labs/babylonfp-relayer-ethl2/releases/latest">
+    <img alt="Version" src="https://img.shields.io/github/tag/dapplink-labs/babylonfp-relayer-ethl2.svg" />
   </a>
-  <a href="https://github.com/eniac-x-labs/manta-relayer/blob/main/LICENSE">
-    <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/eniac-x-labs/manta-relayer.svg" />
+  <a href="https://github.com/dapplink-labs/babylonfp-relayer-ethl2/blob/main/LICENSE">
+    <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/dapplink-labs/babylonfp-relayer-ethl2.svg" />
   </a>
-  <a href="https://pkg.go.dev/github.com/eniac-x-labs/manta-relayer">
-    <img alt="GoDoc" src="https://godoc.org/github.com/eniac-x-labs/manta-relayer?status.svg" />
+  <a href="https://pkg.go.dev/github.com/dapplink-labs/babylonfp-relayer-ethl2">
+    <img alt="GoDoc" src="https://godoc.org/github.com/dapplink-labs/babylonfp-relayer-ethl2?status.svg" />
   </a>
-  <a href="https://goreportcard.com/report/github.com/eniac-x-labs/manta-relayer">
-    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/eniac-x-labs/manta-relayer"/>
+  <a href="https://goreportcard.com/report/github.com/dapplink-labs/babylonfp-relayer-ethl2">
+    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/dapplink-labs/babylonfp-relayer-ethl2"/>
   </a>
 </div>
 

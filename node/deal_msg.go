@@ -3,7 +3,8 @@ package node
 import (
 	"errors"
 	"fmt"
-	"github.com/eniac-x-labs/manta-relayer/manager/types"
+
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
 	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 )

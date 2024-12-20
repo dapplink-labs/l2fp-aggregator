@@ -3,8 +3,8 @@ package manager
 import (
 	"encoding/json"
 	"errors"
-	"github.com/eniac-x-labs/manta-relayer/manager/sdk"
-	"github.com/eniac-x-labs/manta-relayer/store"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/sdk"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
 	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 )

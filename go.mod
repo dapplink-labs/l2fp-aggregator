@@ -1,8 +1,6 @@
-module github.com/eniac-x-labs/manta-relayer
+module github.com/dapplink-labs/babylonfp-relayer-ethl2
 
-go 1.23.1
-
-toolchain go1.23.4
+go 1.23.4
 
 require (
 	github.com/babylonlabs-io/babylon v0.18.0
@@ -145,7 +143,7 @@ require (
 	google.golang.org/grpc v1.67.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
-	nhooyr.io/websocket v1.8.6 // indirect
+	nhooyr.io/websocket v1.8.14 // indirect
 	pgregory.net/rapid v1.1.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
@@ -223,3 +221,5 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
+
+replace nhooyr.io/websocket v1.8.6 => ../../babylonWorkSpace/babylon-integration-deployment/websocket

@@ -10,7 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/eniac-x-labs/manta-relayer/ws/client/tm"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/ws/client/tm"
 )
 
 type WSClients struct {

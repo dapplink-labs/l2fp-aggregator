@@ -3,17 +3,20 @@ package synchronizer
 import (
 	"context"
 	"fmt"
+	"math/big"
+	"time"
+
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/cometbft/cometbft/rpc/client/http"
 	types2 "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	cTx "github.com/cosmos/cosmos-sdk/types/tx"
-	"github.com/eniac-x-labs/manta-relayer/common/tasks"
-	"github.com/eniac-x-labs/manta-relayer/config"
-	"github.com/eniac-x-labs/manta-relayer/store"
-	"github.com/eniac-x-labs/manta-relayer/synchronizer/node"
-	"github.com/ethereum/go-ethereum/log"
-	"math/big"
-	"time"
+
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common/tasks"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/config"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
+	"github.com/dapplink-labs/babylonfp-relayer-ethl2/synchronizer/node"
 )
 
 var validMsgTypes = map[string]bool{
