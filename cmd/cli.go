@@ -14,14 +14,14 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common/cliapp"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/config"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/node"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/node/conversion"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/sign"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/ws/server"
+	"github.com/dapplink-labs/bbn-relayer/common/cliapp"
+	"github.com/dapplink-labs/bbn-relayer/config"
+	"github.com/dapplink-labs/bbn-relayer/manager"
+	"github.com/dapplink-labs/bbn-relayer/node"
+	"github.com/dapplink-labs/bbn-relayer/node/conversion"
+	"github.com/dapplink-labs/bbn-relayer/sign"
+	"github.com/dapplink-labs/bbn-relayer/store"
+	"github.com/dapplink-labs/bbn-relayer/ws/server"
 )
 
 var (

@@ -5,12 +5,12 @@ import (
 	"crypto/ecdsa"
 	"time"
 
+	"github.com/ethereum/go-ethereum/log"
+
 	tmsync "github.com/tendermint/tendermint/libs/sync"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 
-	"github.com/ethereum/go-ethereum/log"
-
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/ws/client/tm"
+	"github.com/dapplink-labs/bbn-relayer/ws/client/tm"
 )
 
 type WSClients struct {

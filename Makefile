@@ -10,10 +10,10 @@ BLSApkRegistryAbiPath := ./l2-fp-contracts/out/BLSApkRegistry.sol/BLSApkRegistry
 
 
 build:
-	env GO111MODULE=on go build -o manta-relayer ./cmd
+	env GO111MODULE=on go build -o bbn-relayer ./cmd
 
 clean:
-	rm manta-relayer
+	rm bbn-relayer
 
 test:
 	go test -v ./...

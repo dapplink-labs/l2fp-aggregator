@@ -2,14 +2,15 @@ package router
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"net/http"
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
+	"github.com/dapplink-labs/bbn-relayer/manager/types"
 )
 
 type Registry struct {

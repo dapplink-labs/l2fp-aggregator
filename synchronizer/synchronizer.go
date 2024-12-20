@@ -13,10 +13,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/client"
 	cTx "github.com/cosmos/cosmos-sdk/types/tx"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common/tasks"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/config"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/synchronizer/node"
+	"github.com/dapplink-labs/bbn-relayer/common/tasks"
+	"github.com/dapplink-labs/bbn-relayer/config"
+	"github.com/dapplink-labs/bbn-relayer/store"
+	"github.com/dapplink-labs/bbn-relayer/synchronizer/node"
 )
 
 var validMsgTypes = map[string]bool{

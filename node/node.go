@@ -7,21 +7,24 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	common3 "github.com/dapplink-labs/babylonfp-relayer-ethl2/common"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/config"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
-	common2 "github.com/dapplink-labs/babylonfp-relayer-ethl2/node/common"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/sign"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/synchronizer"
-	wsclient "github.com/dapplink-labs/babylonfp-relayer-ethl2/ws/client"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
-	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/log"
+
+	common3 "github.com/dapplink-labs/bbn-relayer/common"
+	"github.com/dapplink-labs/bbn-relayer/config"
+	"github.com/dapplink-labs/bbn-relayer/manager/types"
+	common2 "github.com/dapplink-labs/bbn-relayer/node/common"
+	"github.com/dapplink-labs/bbn-relayer/sign"
+	"github.com/dapplink-labs/bbn-relayer/store"
+	"github.com/dapplink-labs/bbn-relayer/synchronizer"
+	wsclient "github.com/dapplink-labs/bbn-relayer/ws/client"
 )
 
 type Node struct {

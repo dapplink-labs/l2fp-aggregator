@@ -3,8 +3,8 @@ package manager
 import (
 	"encoding/json"
 	"errors"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/sdk"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/store"
+	"github.com/dapplink-labs/bbn-relayer/manager/sdk"
+	"github.com/dapplink-labs/bbn-relayer/store"
 	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 )

@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/metrics"
 	"net"
 	"net/http"
 	"strconv"
@@ -14,11 +13,13 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/metrics"
+
 	"github.com/tendermint/tendermint/libs/service"
 	tmsync "github.com/tendermint/tendermint/libs/sync"
 	"github.com/tendermint/tendermint/rpc/jsonrpc/types"
-
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (

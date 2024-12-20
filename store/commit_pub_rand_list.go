@@ -2,6 +2,7 @@ package store
 
 import (
 	"encoding/json"
+
 	"github.com/babylonlabs-io/babylon/x/finality/types"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
+	"github.com/dapplink-labs/bbn-relayer/manager/types"
 	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 )

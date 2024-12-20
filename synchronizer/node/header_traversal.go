@@ -11,7 +11,7 @@ import (
 	types2 "github.com/cometbft/cometbft/types"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/common/bigint"
+	"github.com/dapplink-labs/bbn-relayer/common/bigint"
 )
 
 var (

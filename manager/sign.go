@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/node/common"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/sign"
+	"github.com/dapplink-labs/bbn-relayer/node/common"
+	"github.com/dapplink-labs/bbn-relayer/sign"
 	"sync"
 	"time"
 
@@ -13,8 +13,8 @@ import (
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/manager/types"
-	"github.com/dapplink-labs/babylonfp-relayer-ethl2/ws/server"
+	"github.com/dapplink-labs/bbn-relayer/manager/types"
+	"github.com/dapplink-labs/bbn-relayer/ws/server"
 )
 
 func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignMsgResponse, error) {
