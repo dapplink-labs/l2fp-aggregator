@@ -4,7 +4,10 @@ GITDATE := $(shell git show -s --format='%ct')
 LDFLAGSSTRING +=-X main.GitCommit=$(GITCOMMIT)
 LDFLAGSSTRING +=-X main.GitDate=$(GITDATE)
 LDFLAGS := -ldflags "$(LDFLAGSSTRING)"
-MANTA_SERVICE_MANAGER_ABI_ARTIFACT := bindings/abi/MantaServiceManager.json
+
+FinalityRelayerManagerAbiPath := ./l2-fp-contracts/out/FinalityRelayerManager.sol/FinalityRelayerManager.json
+BLSApkRegistryAbiPath := ./l2-fp-contracts/out/BLSApkRegistry.sol/BLSApkRegistry.json
+
 
 build:
 	env GO111MODULE=on go build -o manta-relayer ./cmd
@@ -18,8 +21,50 @@ test:
 lint:
 	golangci-lint run ./...
 
+compile:
+	cd ./l2-fp-contracts && forge install && forge build && cd ../
+
+bindings: binding-bls binding-finality
+
+binding-bls:
+	$(eval temp := $(shell mktemp))
+
+	cat $(BLSApkRegistryAbiPath) \
+    	| jq -r .bytecode.object > $(temp)
+
+	cat $(BLSApkRegistryAbiPath) \
+		| jq .abi \
+		| abigen --pkg bindings \
+		--abi - \
+		--out bindings/bls_apk_registry.go \
+		--type BLSApkRegistry \
+		--bin $(temp)
+
+		rm $(temp)
+
+binding-finality:
+	$(eval temp := $(shell mktemp))
+
+	cat $(FinalityRelayerManagerAbiPath) \
+    	| jq -r .bytecode.object > $(temp)
+
+	cat $(FinalityRelayerManagerAbiPath) \
+		| jq .abi \
+		| abigen --pkg bindings \
+		--abi - \
+		--out bindings/finality_relayer_manager.go \
+		--type FinalityRelayerManager \
+		--bin $(temp)
+
+		rm $(temp)
+
+
 .PHONY: \
 	 finality-node \
+	 compile \
+	 bindings \
+	 binding-bls \
+	 binding-finality \
 	 clean \
 	 test \
 	 lint \
