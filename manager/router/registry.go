@@ -10,7 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/bbn-relayer/manager/types"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
 )
 
 type Registry struct {

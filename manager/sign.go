@@ -4,17 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/dapplink-labs/bbn-relayer/node/common"
-	"github.com/dapplink-labs/bbn-relayer/sign"
+	"github.com/dapplink-labs/l2fp-aggregator/node/common"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"sync"
 	"time"
 
-	"github.com/influxdata/influxdb/pkg/slices"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 
-	"github.com/dapplink-labs/bbn-relayer/manager/types"
-	"github.com/dapplink-labs/bbn-relayer/ws/server"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
 func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignMsgResponse, error) {
@@ -51,7 +50,7 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				return
 			case resp := <-respChan:
 				m.log.Info(fmt.Sprintf("signed response: %s", resp.RpcResponse.String()), "node", resp.SourceNode)
-				if !slices.ExistsIgnoreCase(m.NodeMembers, resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
+				if ExistsIgnoreCase(m.NodeMembers, resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
 					continue
 				}
 				func() {

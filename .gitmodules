@@ -1,4 +1,3 @@
-
-[submodule "l2-fp-contracts"]
-	path = l2-fp-contracts
-	url = https://github.com/dapplink-labs/l2-fp-contracts
+[submodule "l2fp-contracts"]
+	path = l2fp-contracts
+	url = git@github.com:dapplink-labs/l2fp-contracts.git

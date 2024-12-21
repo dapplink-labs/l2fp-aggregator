@@ -10,7 +10,7 @@ import (
 	tmsync "github.com/tendermint/tendermint/libs/sync"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 
-	"github.com/dapplink-labs/bbn-relayer/ws/client/tm"
+	"github.com/dapplink-labs/l2fp-aggregator/ws/client/tm"
 )
 
 type WSClients struct {

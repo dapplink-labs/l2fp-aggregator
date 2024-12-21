@@ -8,7 +8,7 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/dapplink-labs/bbn-relayer/common/opio"
+	"github.com/dapplink-labs/l2fp-aggregator/common/opio"
 )
 
 type Lifecycle interface {

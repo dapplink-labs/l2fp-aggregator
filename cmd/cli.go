@@ -14,14 +14,14 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 
-	"github.com/dapplink-labs/bbn-relayer/common/cliapp"
-	"github.com/dapplink-labs/bbn-relayer/config"
-	"github.com/dapplink-labs/bbn-relayer/manager"
-	"github.com/dapplink-labs/bbn-relayer/node"
-	"github.com/dapplink-labs/bbn-relayer/node/conversion"
-	"github.com/dapplink-labs/bbn-relayer/sign"
-	"github.com/dapplink-labs/bbn-relayer/store"
-	"github.com/dapplink-labs/bbn-relayer/ws/server"
+	"github.com/dapplink-labs/l2fp-aggregator/common/cliapp"
+	"github.com/dapplink-labs/l2fp-aggregator/config"
+	"github.com/dapplink-labs/l2fp-aggregator/manager"
+	"github.com/dapplink-labs/l2fp-aggregator/node"
+	"github.com/dapplink-labs/l2fp-aggregator/node/conversion"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
 var (
@@ -34,7 +34,7 @@ var (
 var (
 	ConfigFlag = &cli.StringFlag{
 		Name:    "config",
-		Value:   "./manta-relayer.yaml",
+		Value:   "./l2fp-aggregator.yaml",
 		Aliases: []string{"c"},
 		Usage:   "path to config file",
 		EnvVars: []string{"MANTA_RELAYER_CONFIG"},

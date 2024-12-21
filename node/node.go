@@ -17,14 +17,14 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 
-	common3 "github.com/dapplink-labs/bbn-relayer/common"
-	"github.com/dapplink-labs/bbn-relayer/config"
-	"github.com/dapplink-labs/bbn-relayer/manager/types"
-	common2 "github.com/dapplink-labs/bbn-relayer/node/common"
-	"github.com/dapplink-labs/bbn-relayer/sign"
-	"github.com/dapplink-labs/bbn-relayer/store"
-	"github.com/dapplink-labs/bbn-relayer/synchronizer"
-	wsclient "github.com/dapplink-labs/bbn-relayer/ws/client"
+	common3 "github.com/dapplink-labs/l2fp-aggregator/common"
+	"github.com/dapplink-labs/l2fp-aggregator/config"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	common2 "github.com/dapplink-labs/l2fp-aggregator/node/common"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/dapplink-labs/l2fp-aggregator/synchronizer"
+	wsclient "github.com/dapplink-labs/l2fp-aggregator/ws/client"
 )
 
 type Node struct {

@@ -1,4 +1,4 @@
-module github.com/dapplink-labs/bbn-relayer
+module github.com/dapplink-labs/l2fp-aggregator
 
 go 1.23.4
 
@@ -8,7 +8,6 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/ethereum/go-ethereum v1.14.7
 	github.com/gin-gonic/gin v1.10.0
-	github.com/influxdata/influxdb v1.11.6
 	github.com/libp2p/go-libp2p v0.36.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.20.5

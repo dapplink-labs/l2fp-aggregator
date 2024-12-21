@@ -3,9 +3,9 @@ package synchronizer
 import (
 	types2 "github.com/babylonlabs-io/babylon/x/btcstaking/types"
 	"github.com/babylonlabs-io/babylon/x/finality/types"
-	
-	"github.com/dapplink-labs/bbn-relayer/common"
-	"github.com/dapplink-labs/bbn-relayer/store"
+
+	"github.com/dapplink-labs/l2fp-aggregator/common"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
 )
 
 func (syncer *Synchronizer) ProcessNewFinalityProvider(txMessage store.TxMessage) error {

@@ -4,7 +4,7 @@ import (
 	"math/big"
 	"net/rpc"
 
-	_rpc "github.com/dapplink-labs/bbn-relayer/manager/rpc"
+	_rpc "github.com/dapplink-labs/l2fp-aggregator/manager/rpc"
 	"github.com/ethereum/go-ethereum/log"
 )
 

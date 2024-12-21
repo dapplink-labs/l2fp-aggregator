@@ -3,8 +3,8 @@ package manager
 import (
 	"encoding/json"
 	"errors"
-	"github.com/dapplink-labs/bbn-relayer/manager/sdk"
-	"github.com/dapplink-labs/bbn-relayer/store"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/sdk"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
 	"github.com/ethereum/go-ethereum/log"
 	"math/big"
 )

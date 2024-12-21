@@ -8,17 +8,17 @@ parent:
 </div>
 
 <div align="center">
-  <a href="https://github.com/dapplink-labs/bbn-relayer/releases/latest">
-    <img alt="Version" src="https://img.shields.io/github/tag/dapplink-labs/bbn-relayer.svg" />
+  <a href="https://github.com/dapplink-labs/l2fp-aggregator/releases/latest">
+    <img alt="Version" src="https://img.shields.io/github/tag/dapplink-labs/l2fp-aggregator.svg" />
   </a>
-  <a href="https://github.com/dapplink-labs/bbn-relayer/blob/main/LICENSE">
-    <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/dapplink-labs/bbn-relayer.svg" />
+  <a href="https://github.com/dapplink-labs/l2fp-aggregator/blob/main/LICENSE">
+    <img alt="License: Apache-2.0" src="https://img.shields.io/github/license/dapplink-labs/l2fp-aggregator.svg" />
   </a>
-  <a href="https://pkg.go.dev/github.com/dapplink-labs/bbn-relayer">
-    <img alt="GoDoc" src="https://godoc.org/github.com/dapplink-labs/bbn-relayer?status.svg" />
+  <a href="https://pkg.go.dev/github.com/dapplink-labs/l2fp-aggregator">
+    <img alt="GoDoc" src="https://godoc.org/github.com/dapplink-labs/l2fp-aggregator?status.svg" />
   </a>
-  <a href="https://goreportcard.com/report/github.com/dapplink-labs/bbn-relayer">
-    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/dapplink-labs/bbn-relayer"/>
+  <a href="https://goreportcard.com/report/github.com/dapplink-labs/l2fp-aggregator">
+    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/dapplink-labs/l2fp-aggregator"/>
   </a>
 </div>
 

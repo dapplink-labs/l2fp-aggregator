@@ -5,15 +5,15 @@ LDFLAGSSTRING +=-X main.GitCommit=$(GITCOMMIT)
 LDFLAGSSTRING +=-X main.GitDate=$(GITDATE)
 LDFLAGS := -ldflags "$(LDFLAGSSTRING)"
 
-FinalityRelayerManagerAbiPath := ./l2-fp-contracts/out/FinalityRelayerManager.sol/FinalityRelayerManager.json
-BLSApkRegistryAbiPath := ./l2-fp-contracts/out/BLSApkRegistry.sol/BLSApkRegistry.json
+FinalityRelayerManagerAbiPath := ./l2fp-contracts/out/FinalityRelayerManager.sol/FinalityRelayerManager.json
+BLSApkRegistryAbiPath := ./l2fp-contracts/out/BLSApkRegistry.sol/BLSApkRegistry.json
 
 
 build:
-	env GO111MODULE=on go build -o bbn-relayer ./cmd
+	env GO111MODULE=on go build -o l2fp-aggregator ./cmd
 
 clean:
-	rm bbn-relayer
+	rm l2fp-aggregator
 
 test:
 	go test -v ./...
@@ -22,7 +22,7 @@ lint:
 	golangci-lint run ./...
 
 compile:
-	cd ./l2-fp-contracts && forge install && forge build && cd ../
+	cd ./l2fp-contracts && forge install && forge build && cd ../
 
 bindings: binding-bls binding-finality
 

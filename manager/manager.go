@@ -13,22 +13,20 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/influxdata/influxdb/pkg/slices"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
+	"github.com/gin-gonic/gin"
 
-	"github.com/dapplink-labs/bbn-relayer/config"
-	"github.com/dapplink-labs/bbn-relayer/manager/router"
-	"github.com/dapplink-labs/bbn-relayer/manager/rpc"
-	"github.com/dapplink-labs/bbn-relayer/manager/types"
-	"github.com/dapplink-labs/bbn-relayer/store"
-	"github.com/dapplink-labs/bbn-relayer/synchronizer"
-	"github.com/dapplink-labs/bbn-relayer/ws/server"
+	"github.com/dapplink-labs/l2fp-aggregator/config"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/router"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/rpc"
+	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/dapplink-labs/l2fp-aggregator/synchronizer"
+	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
 var (
@@ -244,7 +242,7 @@ func (m *Manager) availableNodes(nodeMembers []string) []string {
 
 	availableNodes := make([]string, 0)
 	for _, n := range aliveNodes {
-		if slices.ExistsIgnoreCase(nodeMembers, n) {
+		if ExistsIgnoreCase(nodeMembers, n) {
 			availableNodes = append(availableNodes, n)
 		}
 	}
@@ -254,4 +252,13 @@ func (m *Manager) availableNodes(nodeMembers []string) []string {
 func randomRequestId() string {
 	code := fmt.Sprintf("%04v", rand.New(rand.NewSource(time.Now().UnixNano())).Int31n(10000))
 	return time.Now().Format("20060102150405") + code
+}
+
+func ExistsIgnoreCase(slice []string, target string) bool {
+	for _, item := range slice {
+		if strings.EqualFold(item, target) {
+			return true
+		}
+	}
+	return false
 }
