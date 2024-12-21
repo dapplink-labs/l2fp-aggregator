@@ -44,8 +44,8 @@ Or check out the latest [release](https://github.com/eniac-x-labs/finality-node)
 
 * start the service
 ```bash
-./manta-relayer manager
-./manta-relayer node
+./l2fp-aggregator manager
+./l2fp-aggregator node
 ```
 
 ## Contributing
