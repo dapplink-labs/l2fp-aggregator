@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"math/big"
 )
 
@@ -22,6 +23,11 @@ type SignMsgResponse struct {
 	G2Point       []byte   `json:"g2_point"`
 	L2BlockNumber *big.Int `json:"l2_block_number"`
 	Vote          uint8    `json:"vote"`
+}
+
+type SignResult struct {
+	Signature *sign.G1Point `json:"signature"`
+	G2Point   *sign.G2Point `json:"g2_point"`
 }
 
 type Method string

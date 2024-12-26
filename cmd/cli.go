@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 
 	"github.com/urfave/cli/v2"
@@ -37,17 +38,17 @@ var (
 		Value:   "./l2fp-aggregator.yaml",
 		Aliases: []string{"c"},
 		Usage:   "path to config file",
-		EnvVars: []string{"MANTA_RELAYER_CONFIG"},
+		EnvVars: []string{"FP_AGGREGATOR_CONFIG"},
 	}
 	PrivateKeyFlag = &cli.StringFlag{
 		Name:    PrivateKeyFlagName,
-		Usage:   "Private Key corresponding to manta relayer",
-		EnvVars: []string{"MANTA_RELAYER_PRIVATE_KEY"},
+		Usage:   "Private Key corresponding to l2fp aggregator",
+		EnvVars: []string{"FP_AGGREGATOR_PRIVATE_KEY"},
 	}
 	KeyPairFlag = &cli.StringFlag{
 		Name:    KeyPairFlagName,
-		Usage:   "key pair corresponding to manta relayer",
-		EnvVars: []string{"MANTA_RELAYER_KEY_PAIR"},
+		Usage:   "key pair corresponding to l2fp aggregator",
+		EnvVars: []string{"FP_AGGREGATOR_KEY_PAIR"},
 	}
 )
 
@@ -101,6 +102,7 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 	}
 
 	var privKey *ecdsa.PrivateKey
+	var shouldRegist bool
 	if ctx.IsSet(PrivateKeyFlagName) {
 		privKey, err = crypto.HexToECDSA(ctx.String(PrivateKeyFlagName))
 		if err != nil {
@@ -117,18 +119,32 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 			return nil, err
 		}
 	} else {
-		keyPairs, err = sign.GenRandomBlsKeys()
-		if err != nil {
-			return nil, err
-		}
-		pubKeyPath := cfg.Node.KeyPath + "/" + DefaultPubKeyFilename
 		privKeyPath := cfg.Node.KeyPath + "/" + DefaultPrivKeyFilename
-		err = os.WriteFile(pubKeyPath, []byte(keyPairs.PubKey.String()), 0o600)
-		if err != nil {
-			return nil, err
-		}
-		err = os.WriteFile(privKeyPath, []byte((keyPairs.PrivKey.String())), 0o600)
-		if err != nil {
+		pubKeyPath := cfg.Node.KeyPath + "/" + DefaultPubKeyFilename
+		if _, err := os.Stat(privKeyPath); err == nil {
+			privKeyData, err := ioutil.ReadFile(privKeyPath)
+			if err != nil {
+				return nil, err
+			}
+			keyPairs, err = sign.MakeKeyPairFromString(string(privKeyData))
+			if err != nil {
+				return nil, err
+			}
+		} else if errors.Is(err, os.ErrNotExist) {
+			keyPairs, err = sign.GenRandomBlsKeys()
+			if err != nil {
+				return nil, err
+			}
+			err = os.WriteFile(pubKeyPath, []byte(keyPairs.PubKey.String()), 0o600)
+			if err != nil {
+				return nil, err
+			}
+			err = os.WriteFile(privKeyPath, []byte(keyPairs.PrivKey.String()), 0o600)
+			if err != nil {
+				return nil, err
+			}
+			shouldRegist = true
+		} else {
 			return nil, err
 		}
 	}
@@ -138,7 +154,7 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 		return nil, err
 	}
 
-	return node.NewFinalityNode(ctx.Context, db, privKey, keyPairs, cfg, logger, shutdown)
+	return node.NewFinalityNode(ctx.Context, db, privKey, keyPairs, shouldRegist, cfg, logger, shutdown)
 }
 
 func runManager(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecycle, error) {

@@ -2,6 +2,7 @@ package router
 
 import (
 	"errors"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,17 +35,17 @@ func (registry *Registry) SignMsgHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, errors.New("tx_hash, block_number and tx_type must not be nil"))
 			return
 		}
-		var signature []byte
+		var signature *sign.G1Point
 		var err error
 
-		signature, err = registry.signService.SignMsgBatch(request)
+		signature, _, err = registry.signService.SignMsgBatch(request)
 
 		if err != nil {
 			c.String(http.StatusInternalServerError, "failed to sign msg")
 			log.Error("failed to sign msg", "error", err)
 			return
 		}
-		if _, err = c.Writer.Write(signature); err != nil {
+		if _, err = c.Writer.Write(signature.Serialize()); err != nil {
 			log.Error("failed to write signature to response writer", "error", err)
 		}
 	}

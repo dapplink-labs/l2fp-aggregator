@@ -16,19 +16,20 @@ import (
 	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
-func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignMsgResponse, error) {
+func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignResult, error) {
 	respChan := make(chan server.ResponseMsg)
 	stopChan := make(chan struct{})
 
 	if err := m.wsServer.RegisterResChannel(ctx.RequestId(), respChan, stopChan); err != nil {
 		m.log.Error("failed to register response channel at signing step", "err", err)
-		return types.SignMsgResponse{}, err
+		return types.SignResult{}, err
 	}
 	m.log.Info("Registered ResChannel with requestID", "requestID", ctx.RequestId())
 
 	errSendChan := make(chan struct{})
 	responseNodes := make(map[string]struct{})
-	var validSignResponse types.SignMsgResponse
+	var aggregatedNumber int
+	var validSignResult types.SignResult
 	var g2Point *sign.G2Point
 	var g2Points []*sign.G2Point
 	var g1Point *sign.G1Point
@@ -50,7 +51,7 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				return
 			case resp := <-respChan:
 				m.log.Info(fmt.Sprintf("signed response: %s", resp.RpcResponse.String()), "node", resp.SourceNode)
-				if ExistsIgnoreCase(m.NodeMembers, resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
+				if !ExistsIgnoreCase(ctx.AvailableNodes(), resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
 					continue
 				}
 				func() {
@@ -86,20 +87,22 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 						}
 						g2Points = append(g2Points, dG2Point)
 						g1Points = append(g1Points, dSign)
+						aggregatedNumber++
 						return
 					}
 				}()
 
 			case <-cctx.Done():
-				m.log.Warn("wait for signature timeout")
+				m.log.Warn("wait for signature timeout", "requestId", ctx.RequestId())
 				return
 			default:
-				if len(responseNodes) == len(m.NodeMembers) {
+				if aggregatedNumber == len(m.NodeMembers) {
 					m.log.Info("received all signing responses")
-					aSign, _ := aggregateSignaturesAndG2Point(g1Points, g2Points)
+					aSign, aG2Point := aggregateSignaturesAndG2Point(g1Points, g2Points)
 					if aSign != nil {
-						validSignResponse = types.SignMsgResponse{
-							Signature: aSign.Serialize(),
+						validSignResult = types.SignResult{
+							Signature: aSign,
+							G2Point:   aG2Point,
 						}
 					}
 					return
@@ -111,7 +114,7 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 	m.sendToNodes(ctx, request, method, errSendChan)
 	wg.Wait()
 
-	return validSignResponse, nil
+	return validSignResult, nil
 }
 
 func (m *Manager) sendToNodes(ctx types.Context, request interface{}, method types.Method, errSendChan chan struct{}) {

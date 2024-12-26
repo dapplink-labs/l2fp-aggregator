@@ -3,16 +3,22 @@ manager:
   sdk_rpc: "127.0.0.1:9000"
   ws_addr: "tcp://127.0.0.1:8081"
   sign_timeout: "20s"
-  node_members: ""
+  node_members: "02ba5734d8f7091719471e7f7ed6b9df170dc70cc661ca05e688601ad984f068b0,039d9031e97dd78ff8c15aa86939de9b1e791066a0224e331bc962a2099a7b1f04"
 
 node:
-  level_db_folder: "node_storage1"
+  level_db_folder: "node_storage2"
   key_path : "key.store"
   ws_addr: "tcp://127.0.0.1:8081"
-  sign_timeout: "10s"
+  sign_timeout: "20s"
   wait_scan_interval: "3s"
 
-wait_peers_full_connected: true
-starting_height: 1
-block_step: 10
-babylon_rpc: ""
+eth_starting_height: 1
+babylon_starting_height: 1
+eth_block_step: 100
+babylon_block_step: 10
+babylon_rpc: "http://84.247.143.254:26657"
+eth_rpc: "http://127.0.0.1:8545"
+eth_chain_id: 31337
+contracts:
+  frm_contract_address: "0x34B40BA116d5Dec75548a9e9A8f15411461E8c70"
+  bar_contact_address: "0xc0F115A19107322cFBf1cDBC7ea011C19EbDB4F8"
