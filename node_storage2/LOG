@@ -1,6 +1,0 @@
-=============== Dec 26, 2024 (CST) ===============
-18:01:00.471515 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-18:01:00.481414 db@open opening
-18:01:00.481769 version@stat F·[] S·0B[] Sc·[]
-18:01:00.485650 db@janitor F·2 G·0
-18:01:00.485672 db@open done T·4.2405ms
