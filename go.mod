@@ -18,6 +18,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+require github.com/google/uuid v1.6.0 // indirect
+
 require (
 	cosmossdk.io/api v0.7.5 // indirect
 	cosmossdk.io/collections v0.4.0 // indirect
@@ -220,5 +222,3 @@ require (
 	lukechampine.com/blake3 v1.3.0 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )
-
-replace nhooyr.io/websocket v1.8.6 => ../../babylonWorkSpace/babylon-integration-deployment/websocket

@@ -34,17 +34,17 @@ func (registry *Registry) SignMsgHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, errors.New("tx_hash, block_number and tx_type must not be nil"))
 			return
 		}
-		var signature []byte
+		var result *types.SignResult
 		var err error
 
-		signature, err = registry.signService.SignMsgBatch(request)
+		result, err = registry.signService.SignMsgBatch(request)
 
 		if err != nil {
 			c.String(http.StatusInternalServerError, "failed to sign msg")
 			log.Error("failed to sign msg", "error", err)
 			return
 		}
-		if _, err = c.Writer.Write(signature); err != nil {
+		if _, err = c.Writer.Write(result.Signature.Serialize()); err != nil {
 			log.Error("failed to write signature to response writer", "error", err)
 		}
 	}

@@ -16,23 +16,26 @@ import (
 	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
-func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignMsgResponse, error) {
+func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignResult, error) {
 	respChan := make(chan server.ResponseMsg)
 	stopChan := make(chan struct{})
 
 	if err := m.wsServer.RegisterResChannel(ctx.RequestId(), respChan, stopChan); err != nil {
 		m.log.Error("failed to register response channel at signing step", "err", err)
-		return types.SignMsgResponse{}, err
+		return types.SignResult{}, err
 	}
 	m.log.Info("Registered ResChannel with requestID", "requestID", ctx.RequestId())
 
 	errSendChan := make(chan struct{})
 	responseNodes := make(map[string]struct{})
-	var validSignResponse types.SignMsgResponse
+	var err error
+	var respNumber int
+	var validSignResult types.SignResult
 	var g2Point *sign.G2Point
 	var g2Points []*sign.G2Point
 	var g1Point *sign.G1Point
 	var g1Points []*sign.G1Point
+	var NonSignerPubkeys []*sign.G1Point
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -50,9 +53,10 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				return
 			case resp := <-respChan:
 				m.log.Info(fmt.Sprintf("signed response: %s", resp.RpcResponse.String()), "node", resp.SourceNode)
-				if ExistsIgnoreCase(m.NodeMembers, resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
+				if !ExistsIgnoreCase(ctx.AvailableNodes(), resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
 					continue
 				}
+				respNumber++
 				func() {
 					defer func() {
 						responseNodes[resp.SourceNode] = struct{}{}
@@ -65,12 +69,18 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 						return
 					} else {
 						var signResponse types.SignMsgResponse
-						if err := tmjson.Unmarshal(resp.RpcResponse.Result, &signResponse); err != nil {
+						if err = tmjson.Unmarshal(resp.RpcResponse.Result, &signResponse); err != nil {
 							m.log.Error("failed to unmarshal sign response", "err", err)
 							return
 						}
 
 						if signResponse.Vote != uint8(common.AgreeVote) {
+							g1Point, err = new(sign.G1Point).Deserialize(signResponse.NonSignerPubkey)
+							if err != nil {
+								m.log.Error("failed to deserialize g1Point", "err", err)
+								return
+							}
+							NonSignerPubkeys = append(NonSignerPubkeys, g1Point)
 							return
 						}
 						dG2Point, err := g2Point.Deserialize(signResponse.G2Point)
@@ -91,17 +101,11 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				}()
 
 			case <-cctx.Done():
-				m.log.Warn("wait for signature timeout")
+				m.log.Warn("wait for signature timeout", "requestId", ctx.RequestId(), "received responses len", respNumber)
 				return
 			default:
-				if len(responseNodes) == len(m.NodeMembers) {
-					m.log.Info("received all signing responses")
-					aSign, _ := aggregateSignaturesAndG2Point(g1Points, g2Points)
-					if aSign != nil {
-						validSignResponse = types.SignMsgResponse{
-							Signature: aSign.Serialize(),
-						}
-					}
+				if respNumber == len(ctx.AvailableNodes()) {
+					m.log.Info("received all signing responses", "requestId", ctx.RequestId(), "received responses len", respNumber)
 					return
 				}
 			}
@@ -111,7 +115,16 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 	m.sendToNodes(ctx, request, method, errSendChan)
 	wg.Wait()
 
-	return validSignResponse, nil
+	aSign, aG2Point := aggregateSignaturesAndG2Point(g1Points, g2Points)
+	if aSign != nil {
+		validSignResult = types.SignResult{
+			NonSignerPubkeys: NonSignerPubkeys,
+			Signature:        aSign,
+			G2Point:          aG2Point,
+		}
+	}
+
+	return validSignResult, nil
 }
 
 func (m *Manager) sendToNodes(ctx types.Context, request interface{}, method types.Method, errSendChan chan struct{}) {

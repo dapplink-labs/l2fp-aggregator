@@ -8,12 +8,16 @@ import (
 )
 
 type Config struct {
-	Node                   NodeConfig    `yaml:"node"`
-	Manager                ManagerConfig `yaml:"manager"`
-	WaitPeersFullConnected bool          `yaml:"wait_peers_full_connected"`
-	StartingHeight         int64         `yaml:"starting_height"`
-	BlockStep              uint64        `yaml:"block_step"`
-	BabylonRpc             string        `yaml:"babylon_rpc"`
+	Node                  NodeConfig      `yaml:"node"`
+	Manager               ManagerConfig   `yaml:"manager"`
+	Contracts             ContractsConfig `yaml:"contracts"`
+	EthStartingHeight     int64           `yaml:"eth_starting_height"`
+	BabylonStartingHeight int64           `yaml:"babylon_starting_height"`
+	EthBlockStep          uint64          `yaml:"eth_block_step"`
+	BabylonBlockStep      uint64          `yaml:"babylon_block_step"`
+	BabylonRpc            string          `yaml:"babylon_rpc"`
+	EthRpc                string          `yaml:"eth_rpc"`
+	EthChainID            uint64          `yaml:"eth_chain_id"`
 }
 
 type NodeConfig struct {
@@ -32,9 +36,31 @@ type ManagerConfig struct {
 	NodeMembers   string        `yaml:"node_members"`
 }
 
+type ContractsConfig struct {
+	FrmContractAddress string `yaml:"frm_contract_address"`
+	BarContactAddress  string `yaml:"bar_contact_address"`
+}
+
 func DefaultConfiguration() *Config {
 	return &Config{
-		WaitPeersFullConnected: true,
+		Node: NodeConfig{
+			LevelDbFolder:    "node_storage",
+			KeyPath:          "key.store",
+			WsAddr:           "127.0.0.1:8081",
+			SignTimeout:      10,
+			WaitScanInterval: 3,
+		},
+		Manager: ManagerConfig{
+			LevelDbFolder: "manager_storage",
+			SdkRpc:        "127.0.0.1:9000",
+			WsAddr:        "127.0.0.1:8081",
+			SignTimeout:   20,
+		},
+		EthStartingHeight:     1,
+		BabylonStartingHeight: 1,
+		EthBlockStep:          100,
+		BabylonBlockStep:      10,
+		EthChainID:            1,
 	}
 }
 

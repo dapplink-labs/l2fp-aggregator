@@ -28,6 +28,24 @@ func VerifySig(sig *bn254.G1Affine, pubkey *bn254.G2Affine, msgBytes [32]byte) (
 
 }
 
+func VerifySigHashedToCurve(sig *bn254.G1Affine, pubkey *bn254.G2Affine, msgPoint *bn254.G1Affine) (bool, error) {
+
+	g2Gen := GetG2Generator()
+
+	var negSig bn254.G1Affine
+	negSig.Neg((*bn254.G1Affine)(sig))
+
+	P := [2]bn254.G1Affine{*msgPoint, negSig}
+	Q := [2]bn254.G2Affine{*pubkey, *g2Gen}
+
+	ok, err := bn254.PairingCheck(P[:], Q[:])
+	if err != nil {
+		return false, nil
+	}
+	return ok, nil
+
+}
+
 func MapToCurve(digest [32]byte) *bn254.G1Affine {
 
 	one := new(big.Int).SetUint64(1)

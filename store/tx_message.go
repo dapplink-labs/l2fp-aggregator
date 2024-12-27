@@ -31,13 +31,13 @@ func (s *Storage) SetTxMessages(msgs []TxMessage) error {
 }
 
 func (s *Storage) GetTxMessage(txHash []byte) (bool, TxMessage) {
-	ceb, err := s.db.Get(getTxMessageKey(txHash), nil)
+	tmb, err := s.db.Get(getTxMessageKey(txHash), nil)
 	if err != nil {
 		return handleError2(TxMessage{}, err)
 	}
-	var ce TxMessage
-	if err = json.Unmarshal(ceb, &ce); err != nil {
+	var tm TxMessage
+	if err = json.Unmarshal(tmb, &tm); err != nil {
 		return false, TxMessage{}
 	}
-	return true, ce
+	return true, tm
 }

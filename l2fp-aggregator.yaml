@@ -9,10 +9,16 @@ node:
   level_db_folder: "node_storage1"
   key_path : "key.store"
   ws_addr: "tcp://127.0.0.1:8081"
-  sign_timeout: "10s"
-  wait_scan_interval: "3s"
+  sign_timeout: "15s"
+  wait_scan_interval: "2s"
 
-wait_peers_full_connected: true
-starting_height: 1
-block_step: 10
+eth_starting_height: 1
+babylon_starting_height: 1
+eth_block_step: 100
+babylon_block_step: 10
 babylon_rpc: ""
+eth_rpc: ""
+eth_chain_id: 31337
+contracts:
+  frm_contract_address: ""
+  bar_contact_address: ""

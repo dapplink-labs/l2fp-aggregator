@@ -7,9 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
-	"time"
 )
 
 func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (*types2.Transaction, error) {
@@ -18,19 +16,19 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 		return nil, errors.New("finality manager create signer error")
 	}
 
-	nonce, err := m.l1Client.NonceAt(ctx, m.from, nil)
+	nonce, err := m.ethClient.NonceAt(ctx, m.from, nil)
 	if err != nil {
 		m.log.Error("failed to get account nonce", "err", err)
 		return nil, err
 	}
 
-	tip, err := m.l1Client.SuggestGasTipCap(ctx)
+	tip, err := m.ethClient.SuggestGasTipCap(ctx)
 	if err != nil {
 		m.log.Error(fmt.Errorf("failed to fetch the suggested gas tip cap: %w", err).Error())
 		return nil, err
 	}
 
-	header, err := m.l1Client.HeaderByNumber(ctx, nil)
+	header, err := m.ethClient.HeaderByNumber(ctx, nil)
 	if err != nil {
 		m.log.Error(fmt.Errorf("failed to fetch the suggested base fee: %w", err).Error())
 		return nil, err
@@ -38,7 +36,7 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 	baseFee := header.BaseFee
 	gasFeeCap := calcGasFeeCap(baseFee, tip)
 
-	gasLimit, err := m.l1Client.EstimateGas(ctx, ethereum.CallMsg{
+	gasLimit, err := m.ethClient.EstimateGas(ctx, ethereum.CallMsg{
 		From: m.from,
 		//To:        &m.msmContractAddr,
 		GasFeeCap: gasFeeCap,
@@ -47,7 +45,7 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 	})
 
 	rawTx := &types2.DynamicFeeTx{
-		ChainID:   big.NewInt(int64(m.l1ChainID)),
+		ChainID:   big.NewInt(int64(m.ethChainID)),
 		Nonce:     nonce,
 		To:        &to,
 		Gas:       gasLimit,
@@ -56,32 +54,13 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 		Data:      data,
 	}
 
-	tx, err := types2.SignNewTx(m.privateKey, types2.LatestSignerForChainID(big.NewInt(int64(m.l1ChainID))), rawTx)
+	tx, err := types2.SignNewTx(m.privateKey, types2.LatestSignerForChainID(big.NewInt(int64(m.ethChainID))), rawTx)
 	if err != nil {
 		m.log.Error("failed to sign transaction", "err", err)
 		return nil, err
 	}
 
 	return tx, nil
-}
-
-func getTransactionReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash) (*types2.Receipt, error) {
-	var receipt *types2.Receipt
-	var err error
-
-	ticker := time.NewTicker(10 * time.Second)
-	for {
-		<-ticker.C
-		receipt, err = client.TransactionReceipt(ctx, txHash)
-		if err != nil && !errors.Is(err, ethereum.NotFound) {
-			return nil, err
-		}
-
-		if errors.Is(err, ethereum.NotFound) {
-			continue
-		}
-		return receipt, nil
-	}
 }
 
 func calcGasFeeCap(baseFee, gasTipCap *big.Int) *big.Int {

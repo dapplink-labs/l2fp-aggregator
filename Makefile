@@ -34,9 +34,9 @@ binding-bls:
 
 	cat $(BLSApkRegistryAbiPath) \
 		| jq .abi \
-		| abigen --pkg bindings \
+		| abigen --pkg bls \
 		--abi - \
-		--out bindings/bls_apk_registry.go \
+		--out bindings/bls/bls_apk_registry.go \
 		--type BLSApkRegistry \
 		--bin $(temp)
 
@@ -50,9 +50,9 @@ binding-finality:
 
 	cat $(FinalityRelayerManagerAbiPath) \
 		| jq .abi \
-		| abigen --pkg bindings \
+		| abigen --pkg finality \
 		--abi - \
-		--out bindings/finality_relayer_manager.go \
+		--out bindings/finality/finality_relayer_manager.go \
 		--type FinalityRelayerManager \
 		--bin $(temp)
 
@@ -60,7 +60,7 @@ binding-finality:
 
 
 .PHONY: \
-	 finality-node \
+	 build \
 	 compile \
 	 bindings \
 	 binding-bls \
