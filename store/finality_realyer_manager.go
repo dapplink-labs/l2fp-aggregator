@@ -3,7 +3,9 @@ package store
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/ethereum/go-ethereum/common"
+
 	"github.com/syndtr/goleveldb/leveldb"
 )
 

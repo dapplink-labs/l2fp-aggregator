@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/dapplink-labs/l2fp-aggregator/node/common"
-	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"sync"
 	"time"
 
+	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	"github.com/dapplink-labs/l2fp-aggregator/node/common"
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
+	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
+
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
-
-	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
-	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
 )
 
 func (m *Manager) sign(ctx types.Context, request interface{}, method types.Method) (types.SignResult, error) {

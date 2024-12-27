@@ -26,7 +26,7 @@ go.work.sum
 .idea
 
 # Binaries for programs and plugins
-bbn-relayer
+l2fp-aggregator
 
 l2-fp-contracts/*
 

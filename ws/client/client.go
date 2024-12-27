@@ -7,10 +7,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
+	"github.com/dapplink-labs/l2fp-aggregator/ws/client/tm"
+
 	tmsync "github.com/tendermint/tendermint/libs/sync"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
-
-	"github.com/dapplink-labs/l2fp-aggregator/ws/client/tm"
 )
 
 type WSClients struct {

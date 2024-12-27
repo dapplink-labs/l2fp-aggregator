@@ -9,8 +9,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
@@ -23,6 +21,8 @@ import (
 	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"github.com/dapplink-labs/l2fp-aggregator/store"
 	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
+
+	"github.com/urfave/cli/v2"
 )
 
 var (

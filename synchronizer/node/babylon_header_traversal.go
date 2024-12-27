@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
-	types2 "github.com/cometbft/cometbft/types"
 	"github.com/ethereum/go-ethereum/log"
 
 	"github.com/dapplink-labs/l2fp-aggregator/common/bigint"
+
+	"github.com/cometbft/cometbft/rpc/client/http"
+	types2 "github.com/cometbft/cometbft/types"
 )
 
 type BabylonHeaderTraversal struct {

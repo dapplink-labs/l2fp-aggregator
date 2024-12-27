@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	types2 "github.com/ethereum/go-ethereum/core/types"
-	"math/big"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (*types2.Transaction, error) {
+func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (*types.Transaction, error) {
 	if m.privateKey == nil {
 		m.log.Error("finality manager create signer error")
 		return nil, errors.New("finality manager create signer error")
@@ -44,7 +45,7 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 		Data:      data,
 	})
 
-	rawTx := &types2.DynamicFeeTx{
+	rawTx := &types.DynamicFeeTx{
 		ChainID:   big.NewInt(int64(m.ethChainID)),
 		Nonce:     nonce,
 		To:        &to,
@@ -54,7 +55,7 @@ func (m *Manager) craftTx(ctx context.Context, data []byte, to common.Address) (
 		Data:      data,
 	}
 
-	tx, err := types2.SignNewTx(m.privateKey, types2.LatestSignerForChainID(big.NewInt(int64(m.ethChainID))), rawTx)
+	tx, err := types.SignNewTx(m.privateKey, types.LatestSignerForChainID(big.NewInt(int64(m.ethChainID))), rawTx)
 	if err != nil {
 		m.log.Error("failed to sign transaction", "err", err)
 		return nil, err

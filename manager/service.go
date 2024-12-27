@@ -3,10 +3,12 @@ package manager
 import (
 	"encoding/json"
 	"errors"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/dapplink-labs/l2fp-aggregator/manager/sdk"
 	"github.com/dapplink-labs/l2fp-aggregator/store"
-	"github.com/ethereum/go-ethereum/log"
-	"math/big"
 )
 
 var NotVerifiedBlock = errors.New("the manager has not verified this block")

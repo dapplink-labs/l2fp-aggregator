@@ -8,15 +8,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
-	types2 "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/client"
-	cTx "github.com/cosmos/cosmos-sdk/types/tx"
-
 	"github.com/dapplink-labs/l2fp-aggregator/common/tasks"
 	"github.com/dapplink-labs/l2fp-aggregator/config"
 	"github.com/dapplink-labs/l2fp-aggregator/store"
 	"github.com/dapplink-labs/l2fp-aggregator/synchronizer/node"
+
+	"github.com/cometbft/cometbft/rpc/client/http"
+	types2 "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/client"
+	cTx "github.com/cosmos/cosmos-sdk/types/tx"
 )
 
 var validMsgTypes = map[string]bool{

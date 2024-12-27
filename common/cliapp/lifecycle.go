@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli/v2"
-
 	"github.com/dapplink-labs/l2fp-aggregator/common/opio"
+
+	"github.com/urfave/cli/v2"
 )
 
 type Lifecycle interface {
