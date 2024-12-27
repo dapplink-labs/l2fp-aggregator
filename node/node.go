@@ -56,13 +56,14 @@ type Node struct {
 	txMsgChan        chan store.TxMessage
 }
 
-func NewFinalityNode(ctx context.Context, db *store.Storage, privKey *ecdsa.PrivateKey, keyPairs *sign.KeyPair, shouldRegist bool, cfg *config.Config, logger log.Logger, shutdown context.CancelCauseFunc) (*Node, error) {
+func NewFinalityNode(ctx context.Context, db *store.Storage, privKey *ecdsa.PrivateKey, keyPairs *sign.KeyPair, shouldRegister bool, cfg *config.Config, logger log.Logger, shutdown context.CancelCauseFunc) (*Node, error) {
 	from := crypto.PubkeyToAddress(privKey.PublicKey)
 
 	pubkey := crypto.CompressPubkey(&privKey.PublicKey)
 	pubkeyHex := hex.EncodeToString(pubkey)
 	logger.Info(fmt.Sprintf("pub key is (%s) \n", pubkeyHex))
-	if shouldRegist {
+	if shouldRegister {
+		logger.Info("register to operator ...")
 		tx, err := registerOperator(ctx, cfg, privKey, pubkeyHex, keyPairs)
 		if err != nil {
 			logger.Error("failed to register operator", "err", err)
@@ -234,10 +235,11 @@ func (n *Node) handleSign(resId tdtypes.JSONRPCStringID, req types.NodeSignReque
 			}
 		} else {
 			signResponse := types.SignMsgResponse{
-				L2BlockNumber: requestBody.BlockNumber,
-				G2Point:       nil,
-				Signature:     nil,
-				Vote:          uint8(common2.DisagreeVote),
+				L2BlockNumber:   requestBody.BlockNumber,
+				G2Point:         nil,
+				Signature:       nil,
+				NonSignerPubkey: n.keyPairs.GetPubKeyG1().Serialize(),
+				Vote:            uint8(common2.DisagreeVote),
 			}
 			RpcResponse := tdtypes.NewRPCSuccessResponse(resId, signResponse)
 			n.log.Info("node disagree the msg, start to send response to finality manager")
@@ -256,7 +258,7 @@ func (n *Node) handleSign(resId tdtypes.JSONRPCStringID, req types.NodeSignReque
 		ticker := time.NewTicker(n.waitScanInterval)
 		defer cancel()
 		defer ticker.Stop()
-		for bSign != nil {
+		for {
 			select {
 			case <-ticker.C:
 				height, err := n.db.GetBabylonScannedHeight()
@@ -266,7 +268,7 @@ func (n *Node) handleSign(resId tdtypes.JSONRPCStringID, req types.NodeSignReque
 				}
 				if requestBody.BlockNumber.Uint64() > height {
 					n.log.Warn(fmt.Sprintf("node received the task from the manager, the height is %v, but the synchronized height is %v", requestBody.BlockNumber.Uint64(), height))
-					return nil
+					continue
 				} else {
 					bSign, err = n.SignMessage(requestBody)
 					if bSign != nil {
@@ -287,15 +289,35 @@ func (n *Node) handleSign(resId tdtypes.JSONRPCStringID, req types.NodeSignReque
 							n.log.Info("send sign response to finality manager successfully ")
 							return nil
 						}
+					} else {
+						signResponse := types.SignMsgResponse{
+							L2BlockNumber:   requestBody.BlockNumber,
+							G2Point:         nil,
+							Signature:       nil,
+							NonSignerPubkey: n.keyPairs.GetPubKeyG1().Serialize(),
+							Vote:            uint8(common2.DisagreeVote),
+						}
+						RpcResponse := tdtypes.NewRPCSuccessResponse(resId, signResponse)
+						n.log.Info("node disagree the msg, start to send response to finality manager")
+
+						err = n.wsClient.SendMsg(RpcResponse)
+						if err != nil {
+							n.log.Error("failed to sendMsg to finality manager", "err", err)
+							return err
+						} else {
+							n.log.Info("send sign response to finality manager successfully ")
+							return nil
+						}
 					}
 				}
 			case <-ctx.Done():
 				n.log.Warn("sign messages timeout !")
 				signResponse := types.SignMsgResponse{
-					Signature:     nil,
-					G2Point:       nil,
-					L2BlockNumber: requestBody.BlockNumber,
-					Vote:          uint8(common2.DidNotVote),
+					Signature:       nil,
+					G2Point:         nil,
+					NonSignerPubkey: n.keyPairs.GetPubKeyG1().Serialize(),
+					L2BlockNumber:   requestBody.BlockNumber,
+					Vote:            uint8(common2.DidNotVote),
 				}
 				RpcResponse := tdtypes.NewRPCSuccessResponse(resId, signResponse)
 				n.log.Info("node did not vote msg, start to send response to finality manager")
@@ -366,19 +388,19 @@ func (n *Node) SignMessage(requestBody types.SignMsgRequest) (*sign.Signature, e
 func registerOperator(ctx context.Context, cfg *config.Config, priKey *ecdsa.PrivateKey, node string, keyPairs *sign.KeyPair) (*types2.Transaction, error) {
 	ethCli, err := client.DialEthClientWithTimeout(ctx, cfg.EthRpc, false)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to dial eth client, err: %v", err)
 	}
 	frmContract, err := finality.NewFinalityRelayerManager(common.HexToAddress(cfg.Contracts.FrmContractAddress), ethCli)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to new FinalityRelayerManager contract, err: %v", err)
 	}
 	bar, err := bls.NewBLSApkRegistry(common.HexToAddress(cfg.Contracts.BarContactAddress), ethCli)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to new BLSApkRegistry contract, err: %v", err)
 	}
 	fParsed, err := finality.FinalityRelayerManagerMetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get FinalityRelayerManager contract abi, err: %v", err)
 	}
 	rawFrmContract := bind.NewBoundContract(
 		common.HexToAddress(cfg.Contracts.FrmContractAddress), *fParsed, ethCli, ethCli,
@@ -386,7 +408,7 @@ func registerOperator(ctx context.Context, cfg *config.Config, priKey *ecdsa.Pri
 	)
 	bParsed, err := bls.BLSApkRegistryMetaData.GetAbi()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get BLSApkRegistry contract abi, err: %v", err)
 	}
 	rawBarContract := bind.NewBoundContract(
 		common.HexToAddress(cfg.Contracts.BarContactAddress), *bParsed, ethCli, ethCli,
@@ -395,13 +417,13 @@ func registerOperator(ctx context.Context, cfg *config.Config, priKey *ecdsa.Pri
 
 	topts, err := client.NewTransactOpts(ctx, cfg.EthChainID, priKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to new transaction option, err: %v", err)
 	}
 
 	nodeAddr := crypto.PubkeyToAddress(priKey.PublicKey)
 	latestBlock, err := ethCli.BlockNumber(ctx)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get latest block, err: %v", err)
 	}
 
 	cOpts := &bind.CallOpts{
@@ -411,16 +433,10 @@ func registerOperator(ctx context.Context, cfg *config.Config, priKey *ecdsa.Pri
 
 	msg, err := bar.PubkeyRegistrationMessageHash(cOpts, nodeAddr)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get PubkeyRegistrationMessageHash, err: %v", err)
 	}
 
 	sigMsg := new(bn254.G1Affine).ScalarMultiplication(sign.NewG1Point(msg.X, msg.Y).G1Affine, keyPairs.PrivKey.BigInt(new(big.Int)))
-
-	res, err := sign.VerifySigHashedToCurve(sigMsg, keyPairs.GetPubKeyG2().G2Affine, sign.NewG1Point(msg.X, msg.Y).G1Affine)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("local verify result", res)
 
 	params := bls.IBLSApkRegistryPubkeyRegistrationParams{
 		PubkeyRegistrationSignature: bls.BN254G1Point{

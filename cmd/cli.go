@@ -102,7 +102,7 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 	}
 
 	var privKey *ecdsa.PrivateKey
-	var shouldRegist bool
+	var shouldRegister bool
 	if ctx.IsSet(PrivateKeyFlagName) {
 		privKey, err = crypto.HexToECDSA(ctx.String(PrivateKeyFlagName))
 		if err != nil {
@@ -143,7 +143,7 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 			if err != nil {
 				return nil, err
 			}
-			shouldRegist = true
+			shouldRegister = true
 		} else {
 			return nil, err
 		}
@@ -154,7 +154,7 @@ func runNode(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecyc
 		return nil, err
 	}
 
-	return node.NewFinalityNode(ctx.Context, db, privKey, keyPairs, shouldRegist, cfg, logger, shutdown)
+	return node.NewFinalityNode(ctx.Context, db, privKey, keyPairs, shouldRegister, cfg, logger, shutdown)
 }
 
 func runManager(ctx *cli.Context, shutdown context.CancelCauseFunc) (cliapp.Lifecycle, error) {

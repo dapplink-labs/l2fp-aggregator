@@ -41,8 +41,8 @@ import (
 )
 
 var (
-	errNotEnoughSignNode = errors.New("not enough available nodes to sign state")
-	errNotEnoughVoteNode = errors.New("not enough available nodes to vote state")
+	errNotEnoughSignNode = errors.New("not enough available nodes to sign")
+	errNotEnoughVoteNode = errors.New("not enough available nodes to vote")
 )
 
 type Manager struct {
@@ -293,129 +293,133 @@ func (m *Manager) work() {
 	for {
 		select {
 		case txMsg := <-m.txMsgChan:
-			var request types.SignMsgRequest
-			var signature *sign.G1Point
-			var g2Point *sign.G2Point
+			go func(txMsg store.TxMessage) {
+				var request types.SignMsgRequest
+				var signature *sign.G1Point
+				var g2Point *sign.G2Point
+				var NonSignerPubkeys []finality.BN254G1Point
 
-			request.BlockNumber = big.NewInt(int64(txMsg.BlockHeight))
-			request.TxType = txMsg.Type
-			request.TxHash = txMsg.TransactionHash
+				request.BlockNumber = big.NewInt(int64(txMsg.BlockHeight))
+				request.TxType = txMsg.Type
+				request.TxHash = txMsg.TransactionHash
 
-			if sig, err := m.db.GetSignature(request.BlockNumber.Int64()); len(sig.Data) > 0 {
+				if sig, err := m.db.GetSignature(request.BlockNumber.Int64()); len(sig.Data) > 0 {
+					if err != nil {
+						m.log.Error("failed to get signature by tx hash", "tx_hash", hexutil.Encode(request.TxHash), "err", err)
+						return
+					}
+					signature, err = new(sign.G1Point).Deserialize(sig.Data)
+					if err != nil {
+						m.log.Error("failed to deserialize signature", "err", err)
+						return
+					}
+					m.log.Info("get stored signature ", "tx_hash", hexutil.Encode(request.TxHash), "sig", sig)
+				} else {
+					res, err := m.SignMsgBatch(request)
+					if errors.Is(err, errNotEnoughSignNode) || errors.Is(err, errNotEnoughVoteNode) {
+						m.log.Error("not enough available nodes to sign or not enough available nodes to vote")
+						return
+					} else if err != nil {
+						m.log.Error("failed to sign msg", "err", err)
+						return
+					}
+					m.log.Info("success to sign msg", "txHash", hexutil.Encode(request.TxHash), "signature", res.Signature, "block_number", request.BlockNumber.Int64())
+
+					signature = res.Signature
+					g2Point = res.G2Point
+					for _, v := range res.NonSignerPubkeys {
+						NonSignerPubkeys = append(NonSignerPubkeys, finality.BN254G1Point{
+							X: v.X.BigInt(new(big.Int)),
+							Y: v.Y.BigInt(new(big.Int)),
+						})
+					}
+					if err = m.db.SetSignature(store.Signature{
+						BlockNumber:     request.BlockNumber.Int64(),
+						TransactionHash: request.TxHash,
+						Data:            signature.Serialize(),
+						Timestamp:       time.Now().Unix(),
+					}); err != nil {
+						m.log.Error("failed to store signature", "err", err)
+						return
+					}
+				}
+
+				opts, err := client.NewTransactOpts(m.ctx, m.ethChainID, m.privateKey)
 				if err != nil {
-					m.log.Error("failed to get signature by tx hash", "tx_hash", hexutil.Encode(request.TxHash), "err", err)
-					continue
+					m.log.Error("failed to new transact opts", "err", err)
+					return
 				}
-				signature, err = new(sign.G1Point).Deserialize(sig.Data)
+
+				data, err := m.processTxMsgData(txMsg)
 				if err != nil {
-					m.log.Error("failed to deserialize signature", "err", err)
-					continue
+					m.log.Error("failed to process tx msg data", "err", err)
+					return
 				}
-				m.log.Info("get stored signature ", "tx_hash", hexutil.Encode(request.TxHash), "sig", sig)
-			} else {
-				signature, g2Point, err = m.SignMsgBatch(request)
-				if errors.Is(err, errNotEnoughSignNode) || errors.Is(err, errNotEnoughVoteNode) {
-					continue
-				} else if err != nil {
-					m.log.Error("failed to sign msg", "err", err)
-					continue
+
+				finalityBatch := finality.IFinalityRelayerManagerFinalityBatch{
+					StateRoot:       common.HexToHash("1"),
+					L2BlockNumber:   big.NewInt(1),
+					L1BlockHash:     common.HexToHash("1"),
+					L1BlockNumber:   big.NewInt(int64(1)),
+					MsgHash:         crypto.Keccak256Hash(data),
+					DisputeGameType: 0,
 				}
-				m.log.Info("success to sign msg", "txHash", hexutil.Encode(request.TxHash), "signature", signature, "block_number", request.BlockNumber.Int64())
-				if err = m.db.SetSignature(store.Signature{
-					BlockNumber:     request.BlockNumber.Int64(),
-					TransactionHash: request.TxHash,
-					Data:            signature.Serialize(),
-					Timestamp:       time.Now().Unix(),
-				}); err != nil {
-					m.log.Error("failed to store signature", "err", err)
-					continue
+
+				finalityNonSignerAndSignature := finality.IBLSApkRegistryFinalityNonSignerAndSignature{
+					NonSignerPubkeys: NonSignerPubkeys,
+					ApkG2: finality.BN254G2Point{
+						X: [2]*big.Int{g2Point.X.A1.BigInt(new(big.Int)), g2Point.X.A0.BigInt(new(big.Int))},
+						Y: [2]*big.Int{g2Point.Y.A1.BigInt(new(big.Int)), g2Point.Y.A0.BigInt(new(big.Int))},
+					},
+					Sigma: finality.BN254G1Point{
+						X: signature.X.BigInt(new(big.Int)),
+						Y: signature.Y.BigInt(new(big.Int)),
+					},
+					TotalBtcStake:   big.NewInt(1),
+					TotalMantaStake: big.NewInt(1),
 				}
-			}
 
-			opts, err := client.NewTransactOpts(m.ctx, m.ethChainID, m.privateKey)
-			if err != nil {
-				m.log.Error("failed to new transact opts", "err", err)
-				continue
-			}
+				tx, err := m.frmContract.VerifyFinalitySignature(opts, finalityBatch, finalityNonSignerAndSignature, big.NewInt(1))
+				if err != nil {
+					m.log.Error("failed to craft VerifyFinalitySignature transaction", "err", err)
+					return
+				}
+				rTx, err := m.rawFrmContract.RawTransact(opts, tx.Data())
+				if err != nil {
+					m.log.Error("failed to raw VerifyFinalitySignature transaction", "err", err)
+					return
+				}
+				err = m.ethClient.SendTransaction(m.ctx, tx)
+				if err != nil {
+					m.log.Error("failed to send VerifyFinalitySignature transaction", "err", err)
+					return
+				}
 
-			data, err := m.processTxMsgData(txMsg)
-			if err != nil {
-				m.log.Error("failed to process tx msg data", "err", err)
-				continue
-			}
-
-			result, err := sign.VerifySig(signature.G1Affine, g2Point.G2Affine, crypto.Keccak256Hash(data))
-			if err != nil {
-				m.log.Error("manager failed to verify signature by local", "err", err)
-			}
-			fmt.Println("================================")
-			fmt.Println(result)
-			fmt.Println("================================")
-
-			finalityBatch := finality.IFinalityRelayerManagerFinalityBatch{
-				StateRoot:       common.HexToHash("1"),
-				L2BlockNumber:   big.NewInt(int64(txMsg.BlockHeight)),
-				L1BlockHash:     common.HexToHash("1"),
-				L1BlockNumber:   big.NewInt(int64(1)),
-				MsgHash:         crypto.Keccak256Hash(data),
-				DisputeGameType: 0,
-			}
-
-			finalityNonSignerAndSignature := finality.IBLSApkRegistryFinalityNonSignerAndSignature{
-				NonSignerPubkeys: nil,
-				ApkG2: finality.BN254G2Point{
-					X: [2]*big.Int{g2Point.X.A1.BigInt(new(big.Int)), g2Point.X.A0.BigInt(new(big.Int))},
-					Y: [2]*big.Int{g2Point.Y.A1.BigInt(new(big.Int)), g2Point.Y.A0.BigInt(new(big.Int))},
-				},
-				Sigma: finality.BN254G1Point{
-					X: signature.X.BigInt(new(big.Int)),
-					Y: signature.Y.BigInt(new(big.Int)),
-				},
-				TotalBtcStake:   big.NewInt(1),
-				TotalMantaStake: big.NewInt(1),
-			}
-
-			tx, err := m.frmContract.VerifyFinalitySignature(opts, finalityBatch, finalityNonSignerAndSignature, big.NewInt(1))
-			if err != nil {
-				m.log.Error("failed to craft VerifyFinalitySignature transaction", "err", err)
-				continue
-			}
-			rTx, err := m.rawFrmContract.RawTransact(opts, tx.Data())
-			if err != nil {
-				m.log.Error("failed to raw VerifyFinalitySignature transaction", "err", err)
-				continue
-			}
-			err = m.ethClient.SendTransaction(m.ctx, tx)
-			if err != nil {
-				m.log.Error("failed to send VerifyFinalitySignature transaction", "err", err)
-				break
-			}
-
-			receipt, err := client.GetTransactionReceipt(m.ctx, m.ethClient, rTx.Hash())
-			if err != nil {
-				m.log.Error("failed to get verify finality transaction receipt", "err", err)
-				break
-			}
-			m.log.Info("success to send verify finality signature transaction", "tx_hash", receipt.TxHash.String())
-
+				receipt, err := client.GetTransactionReceipt(m.ctx, m.ethClient, rTx.Hash())
+				if err != nil {
+					m.log.Error("failed to get verify finality transaction receipt", "err", err)
+					return
+				}
+				m.log.Info("success to send verify finality signature transaction", "tx_hash", receipt.TxHash.String())
+			}(txMsg)
 		case <-m.done:
 			return
 		}
 	}
 }
 
-func (m *Manager) SignMsgBatch(request types.SignMsgRequest) (*sign.G1Point, *sign.G2Point, error) {
+func (m *Manager) SignMsgBatch(request types.SignMsgRequest) (*types.SignResult, error) {
 	m.log.Info("received sign request", "tx_type", request.TxType, "block_number", request.BlockNumber.Uint64(), "tx_hash", hexutil.Encode(request.TxHash))
 
 	activeMember, err := m.db.GetActiveMember()
 	if err != nil {
 		m.log.Error("failed to get active member from db", "err", err)
-		return nil, nil, err
+		return nil, err
 	}
 	availableNodes := m.availableNodes(activeMember.Members)
-	if len(availableNodes) < len(m.NodeMembers) {
+	if len(availableNodes) == 0 {
 		m.log.Warn("not enough sign node", "availableNodes", availableNodes)
-		return nil, nil, errNotEnoughSignNode
+		return nil, errNotEnoughSignNode
 	}
 
 	ctx := types.NewContext().
@@ -426,13 +430,13 @@ func (m *Manager) SignMsgBatch(request types.SignMsgRequest) (*sign.G1Point, *si
 	var signErr error
 	resp, signErr = m.sign(ctx, request, types.SignMsgBatch)
 	if signErr != nil {
-		return nil, nil, signErr
+		return nil, signErr
 	}
 	if resp.Signature == nil {
-		return nil, nil, errNotEnoughVoteNode
+		return nil, errNotEnoughVoteNode
 	}
 
-	return resp.Signature, resp.G2Point, nil
+	return &resp, nil
 }
 
 func (m *Manager) availableNodes(nodeMembers []string) []string {

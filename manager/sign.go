@@ -28,12 +28,14 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 
 	errSendChan := make(chan struct{})
 	responseNodes := make(map[string]struct{})
-	var aggregatedNumber int
+	var err error
+	var respNumber int
 	var validSignResult types.SignResult
 	var g2Point *sign.G2Point
 	var g2Points []*sign.G2Point
 	var g1Point *sign.G1Point
 	var g1Points []*sign.G1Point
+	var NonSignerPubkeys []*sign.G1Point
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -54,6 +56,7 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 				if !ExistsIgnoreCase(ctx.AvailableNodes(), resp.SourceNode) { // ignore the message which the sender should not be involved in approver set
 					continue
 				}
+				respNumber++
 				func() {
 					defer func() {
 						responseNodes[resp.SourceNode] = struct{}{}
@@ -66,12 +69,18 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 						return
 					} else {
 						var signResponse types.SignMsgResponse
-						if err := tmjson.Unmarshal(resp.RpcResponse.Result, &signResponse); err != nil {
+						if err = tmjson.Unmarshal(resp.RpcResponse.Result, &signResponse); err != nil {
 							m.log.Error("failed to unmarshal sign response", "err", err)
 							return
 						}
 
 						if signResponse.Vote != uint8(common.AgreeVote) {
+							g1Point, err = new(sign.G1Point).Deserialize(signResponse.NonSignerPubkey)
+							if err != nil {
+								m.log.Error("failed to deserialize g1Point", "err", err)
+								return
+							}
+							NonSignerPubkeys = append(NonSignerPubkeys, g1Point)
 							return
 						}
 						dG2Point, err := g2Point.Deserialize(signResponse.G2Point)
@@ -87,24 +96,16 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 						}
 						g2Points = append(g2Points, dG2Point)
 						g1Points = append(g1Points, dSign)
-						aggregatedNumber++
 						return
 					}
 				}()
 
 			case <-cctx.Done():
-				m.log.Warn("wait for signature timeout", "requestId", ctx.RequestId())
+				m.log.Warn("wait for signature timeout", "requestId", ctx.RequestId(), "received responses len", respNumber)
 				return
 			default:
-				if aggregatedNumber == len(m.NodeMembers) {
-					m.log.Info("received all signing responses")
-					aSign, aG2Point := aggregateSignaturesAndG2Point(g1Points, g2Points)
-					if aSign != nil {
-						validSignResult = types.SignResult{
-							Signature: aSign,
-							G2Point:   aG2Point,
-						}
-					}
+				if respNumber == len(ctx.AvailableNodes()) {
+					m.log.Info("received all signing responses", "requestId", ctx.RequestId(), "received responses len", respNumber)
 					return
 				}
 			}
@@ -113,6 +114,15 @@ func (m *Manager) sign(ctx types.Context, request interface{}, method types.Meth
 
 	m.sendToNodes(ctx, request, method, errSendChan)
 	wg.Wait()
+
+	aSign, aG2Point := aggregateSignaturesAndG2Point(g1Points, g2Points)
+	if aSign != nil {
+		validSignResult = types.SignResult{
+			NonSignerPubkeys: NonSignerPubkeys,
+			Signature:        aSign,
+			G2Point:          aG2Point,
+		}
+	}
 
 	return validSignResult, nil
 }
