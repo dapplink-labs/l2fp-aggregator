@@ -1,12 +1,13 @@
 package synchronizer
 
 import (
-	types2 "github.com/babylonlabs-io/babylon/x/btcstaking/types"
-	"github.com/babylonlabs-io/babylon/x/finality/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/dapplink-labs/l2fp-aggregator/common"
 	"github.com/dapplink-labs/l2fp-aggregator/store"
+
+	types2 "github.com/babylonlabs-io/babylon/x/btcstaking/types"
+	"github.com/babylonlabs-io/babylon/x/finality/types"
 )
 
 func (syncer *BabylonSynchronizer) ProcessNewFinalityProvider(txMessage store.TxMessage) error {

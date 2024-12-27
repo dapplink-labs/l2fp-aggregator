@@ -2,8 +2,9 @@ package types
 
 import (
 	"context"
-	"github.com/dapplink-labs/l2fp-aggregator/sign"
 	"math/big"
+
+	"github.com/dapplink-labs/l2fp-aggregator/sign"
 )
 
 type SignMsgRequest struct {

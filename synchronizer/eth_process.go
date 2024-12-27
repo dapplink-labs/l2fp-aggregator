@@ -1,9 +1,10 @@
 package synchronizer
 
 import (
+	"github.com/ethereum/go-ethereum/log"
+
 	"github.com/dapplink-labs/l2fp-aggregator/store"
 	"github.com/dapplink-labs/l2fp-aggregator/synchronizer/contracts"
-	"github.com/ethereum/go-ethereum/log"
 )
 
 type EthEventProcess struct {

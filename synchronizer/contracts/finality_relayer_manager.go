@@ -2,11 +2,13 @@ package contracts
 
 import (
 	"context"
-	"github.com/dapplink-labs/l2fp-aggregator/bindings/finality"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
+
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
+
+	"github.com/dapplink-labs/l2fp-aggregator/bindings/finality"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
 )
 
 type FinalityRelayerManager struct {

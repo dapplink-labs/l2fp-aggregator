@@ -6,23 +6,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/consensys/gnark-crypto/ecc/bn254"
-	"github.com/dapplink-labs/l2fp-aggregator/bindings/bls"
-	"github.com/dapplink-labs/l2fp-aggregator/bindings/finality"
-	"github.com/dapplink-labs/l2fp-aggregator/client"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	types2 "github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
-
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 
+	"github.com/dapplink-labs/l2fp-aggregator/bindings/bls"
+	"github.com/dapplink-labs/l2fp-aggregator/bindings/finality"
+	"github.com/dapplink-labs/l2fp-aggregator/client"
 	common3 "github.com/dapplink-labs/l2fp-aggregator/common"
 	"github.com/dapplink-labs/l2fp-aggregator/config"
 	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
@@ -31,6 +28,9 @@ import (
 	"github.com/dapplink-labs/l2fp-aggregator/store"
 	"github.com/dapplink-labs/l2fp-aggregator/synchronizer"
 	wsclient "github.com/dapplink-labs/l2fp-aggregator/ws/client"
+
+	"github.com/consensys/gnark-crypto/ecc/bn254"
+	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 )
 
 type Node struct {

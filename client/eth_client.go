@@ -6,17 +6,17 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"math/big"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/log"
-	"math/big"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
