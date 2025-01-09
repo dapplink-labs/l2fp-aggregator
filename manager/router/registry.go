@@ -7,8 +7,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/manager/types"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"

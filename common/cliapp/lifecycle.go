@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common/opio"
+	"github.com/Manta-Network/manta-fp-aggregator/common/opio"
 
 	"github.com/urfave/cli/v2"
 )

@@ -1,3 +1,3 @@
-[submodule "l2fp-contracts"]
-	path = l2fp-contracts
-	url = git@github.com:dapplink-labs/l2fp-contracts.git
+[submodule "manta-fp-contracts"]
+	path = manta-fp-contracts
+	url = https://github.com/Manta-Network/manta-fp-contracts

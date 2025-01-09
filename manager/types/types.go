@@ -4,7 +4,7 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/dapplink-labs/l2fp-aggregator/sign"
+	"github.com/Manta-Network/manta-fp-aggregator/sign"
 )
 
 type SignMsgRequest struct {

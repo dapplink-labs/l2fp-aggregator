@@ -3,8 +3,8 @@ package synchronizer
 import (
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/l2fp-aggregator/store"
-	"github.com/dapplink-labs/l2fp-aggregator/synchronizer/contracts"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/synchronizer/contracts"
 )
 
 type EthEventProcess struct {

@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common/bigint"
+	"github.com/Manta-Network/manta-fp-aggregator/common/bigint"
 )
 
 type EthHeaderTraversal struct {

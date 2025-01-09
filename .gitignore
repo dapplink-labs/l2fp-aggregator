@@ -26,8 +26,8 @@ go.work.sum
 .idea
 
 # Binaries for programs and plugins
-l2fp-aggregator
+manta-fp-aggregator
 
-l2-fp-contracts/*
+manta-fp-contracts/*
 
 key.store/*

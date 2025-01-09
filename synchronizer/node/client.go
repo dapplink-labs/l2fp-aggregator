@@ -16,7 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common/retry"
+	"github.com/Manta-Network/manta-fp-aggregator/common/retry"
 )
 
 const (

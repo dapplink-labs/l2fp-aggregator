@@ -7,8 +7,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/l2fp-aggregator/manager/sdk"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/manager/sdk"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
 )
 
 var NotVerifiedBlock = errors.New("the manager has not verified this block")

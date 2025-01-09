@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	"github.com/Manta-Network/manta-fp-aggregator/manager/types"
 
 	tdtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"

@@ -4,8 +4,8 @@ import (
 	types3 "github.com/babylonlabs-io/babylon/x/btccheckpoint/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/common"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
 
 	types2 "github.com/babylonlabs-io/babylon/x/btcstaking/types"
 	"github.com/babylonlabs-io/babylon/x/finality/types"

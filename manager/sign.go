@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
-	"github.com/dapplink-labs/l2fp-aggregator/node/common"
-	"github.com/dapplink-labs/l2fp-aggregator/sign"
-	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
+	"github.com/Manta-Network/manta-fp-aggregator/manager/types"
+	"github.com/Manta-Network/manta-fp-aggregator/node/common"
+	"github.com/Manta-Network/manta-fp-aggregator/sign"
+	"github.com/Manta-Network/manta-fp-aggregator/ws/server"
 
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	tmtypes "github.com/tendermint/tendermint/rpc/jsonrpc/types"

@@ -1,4 +1,4 @@
-module github.com/dapplink-labs/l2fp-aggregator
+module github.com/Manta-Network/manta-fp-aggregator
 
 go 1.23.4
 

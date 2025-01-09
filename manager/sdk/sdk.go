@@ -6,7 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/log"
 
-	_rpc "github.com/dapplink-labs/l2fp-aggregator/manager/rpc"
+	_rpc "github.com/Manta-Network/manta-fp-aggregator/manager/rpc"
 )
 
 type FinalitySDK struct {

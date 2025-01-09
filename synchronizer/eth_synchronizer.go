@@ -11,11 +11,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/log"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common/tasks"
-	"github.com/dapplink-labs/l2fp-aggregator/config"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
-	"github.com/dapplink-labs/l2fp-aggregator/synchronizer/node"
-	node2 "github.com/dapplink-labs/l2fp-aggregator/synchronizer/node"
+	"github.com/Manta-Network/manta-fp-aggregator/common/tasks"
+	"github.com/Manta-Network/manta-fp-aggregator/config"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/synchronizer/node"
+	node2 "github.com/Manta-Network/manta-fp-aggregator/synchronizer/node"
 )
 
 type EthSynchronizer struct {

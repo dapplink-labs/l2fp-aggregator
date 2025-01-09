@@ -10,10 +10,10 @@ BLSApkRegistryAbiPath := ./l2fp-contracts/out/BLSApkRegistry.sol/BLSApkRegistry.
 
 
 build:
-	env GO111MODULE=on go build -o l2fp-aggregator ./cmd
+	env GO111MODULE=on go build -o manta-fp-aggregator ./cmd
 
 clean:
-	rm l2fp-aggregator
+	rm manta-fp-aggregator
 
 test:
 	go test -v ./...

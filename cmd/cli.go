@@ -13,14 +13,14 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 
-	"github.com/dapplink-labs/l2fp-aggregator/common/cliapp"
-	"github.com/dapplink-labs/l2fp-aggregator/config"
-	"github.com/dapplink-labs/l2fp-aggregator/manager"
-	"github.com/dapplink-labs/l2fp-aggregator/node"
-	"github.com/dapplink-labs/l2fp-aggregator/node/conversion"
-	"github.com/dapplink-labs/l2fp-aggregator/sign"
-	"github.com/dapplink-labs/l2fp-aggregator/store"
-	"github.com/dapplink-labs/l2fp-aggregator/ws/server"
+	"github.com/Manta-Network/manta-fp-aggregator/common/cliapp"
+	"github.com/Manta-Network/manta-fp-aggregator/config"
+	"github.com/Manta-Network/manta-fp-aggregator/manager"
+	"github.com/Manta-Network/manta-fp-aggregator/node"
+	"github.com/Manta-Network/manta-fp-aggregator/node/conversion"
+	"github.com/Manta-Network/manta-fp-aggregator/sign"
+	"github.com/Manta-Network/manta-fp-aggregator/store"
+	"github.com/Manta-Network/manta-fp-aggregator/ws/server"
 
 	"github.com/urfave/cli/v2"
 )
