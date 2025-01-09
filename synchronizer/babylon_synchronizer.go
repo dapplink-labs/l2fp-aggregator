@@ -20,9 +20,11 @@ import (
 )
 
 var validMsgTypes = map[string]bool{
-	"/babylon.btcstaking.v1.MsgCreateFinalityProvider": true,
-	"/babylon.btcstaking.v1.MsgCreateBTCDelegation":    true,
-	"/babylon.finality.v1.MsgCommitPubRandList":        true,
+	"/babylon.btcstaking.v1.MsgCreateFinalityProvider":    true,
+	"/babylon.btcstaking.v1.MsgCreateBTCDelegation":       true,
+	"/babylon.finality.v1.MsgCommitPubRandList":           true,
+	"/babylon.btcstaking.v1.MsgBTCUndelegate":             true,
+	"/babylon.btcstaking.v1.MsgSelectiveSlashingEvidence": true,
 }
 
 type BabylonSynchronizer struct {

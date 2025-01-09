@@ -13,9 +13,14 @@ type FinalitySDK struct {
 	*rpc.Client
 }
 
-type SdkResponse struct {
+type SignResponse struct {
 	Signature []byte `json:"signature"`
 	Message   string `json:"message"`
+}
+
+type StakerDelegationResponse struct {
+	Amount  uint64 `json:"amount"`
+	Message string `json:"message"`
 }
 
 func NewFinalitySDK(addr string) (_rpc.FinalityInterface, error) {
@@ -31,6 +36,14 @@ func (f *FinalitySDK) SignatureByBlock(block *big.Int) (interface{}, error) {
 	var res interface{}
 	err := f.Call("FinalityRpcServer.Finality", _rpc.FinalityRequest{
 		BlockNumber: block,
+	}, &res)
+	return &res, err
+}
+
+func (f *FinalitySDK) StakerDelegationByAddress(address string) (interface{}, error) {
+	var res interface{}
+	err := f.Call("FinalityRpcServer.Staker", _rpc.StakerDelegationRequest{
+		Address: address,
 	}, &res)
 	return &res, err
 }

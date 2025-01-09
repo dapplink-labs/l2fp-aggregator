@@ -1,6 +1,7 @@
 package synchronizer
 
 import (
+	types3 "github.com/babylonlabs-io/babylon/x/btccheckpoint/types"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"github.com/dapplink-labs/l2fp-aggregator/common"
@@ -35,17 +36,28 @@ func (syncer *BabylonSynchronizer) ProcessNewFinalityProvider(txMessage store.Tx
 }
 
 func (syncer *BabylonSynchronizer) ProcessCreateBTCDelegation(txMessage store.TxMessage) error {
-	var err error
 	var mCBD types2.MsgCreateBTCDelegation
+	var txInfo types3.TransactionInfo
 
 	if txMessage.Type == common.MsgCreateBTCDelegation {
 		mCBD.Unmarshal(txMessage.Data)
+		txInfo.Unmarshal(mCBD.StakingTx)
+		btcTx, err := types2.NewBtcTransaction(txInfo.Transaction)
+		if err != nil {
+			syncer.log.Error("failed to new btc transaction", "err", err)
+			return err
+		}
 		err = syncer.db.SetCreateBTCDelegationMsg(store.CreateBTCDelegation{
 			CBD:    mCBD,
 			TxHash: txMessage.TransactionHash,
 		})
 		if err != nil {
 			syncer.log.Error("failed to store CreateBTCDelegation message", "err", err)
+			return err
+		}
+		err = syncer.db.SetBabylonDelegationKey(txMessage.TransactionHash, []byte(btcTx.Transaction.TxHash().String()))
+		if err != nil {
+			syncer.log.Error("failed to store babylon delegation key", "err", err)
 			return err
 		}
 		syncer.log.Info("success to store CreateBTCDelegation message", "tx_hash", hexutil.Encode(txMessage.TransactionHash))
@@ -68,6 +80,46 @@ func (syncer *BabylonSynchronizer) ProcessCommitPubRandList(txMessage store.TxMe
 			return err
 		}
 		syncer.log.Info("success to store CommitPubRandList message", "tx_hash", hexutil.Encode(txMessage.TransactionHash))
+	}
+
+	return nil
+}
+
+func (syncer *BabylonSynchronizer) ProcessBTCUndelegate(txMessage store.TxMessage) error {
+	var err error
+	var mBUD types2.MsgBTCUndelegate
+
+	if txMessage.Type == common.MsgBTCUndelegate {
+		mBUD.Unmarshal(txMessage.Data)
+		err = syncer.db.SetBtcUndelegateMsg(store.BtcUndelegate{
+			BU:     mBUD,
+			TxHash: txMessage.TransactionHash,
+		})
+		if err != nil {
+			syncer.log.Error("failed to store BTCUndelegate message", "err", err)
+			return err
+		}
+		syncer.log.Info("success to store BTCUndelegate message", "tx_hash", hexutil.Encode(txMessage.TransactionHash))
+	}
+
+	return nil
+}
+
+func (syncer *BabylonSynchronizer) ProcessSelectiveSlashingEvidence(txMessage store.TxMessage) error {
+	var err error
+	var mSSE types2.MsgSelectiveSlashingEvidence
+
+	if txMessage.Type == common.MsgSelectiveSlashingEvidence {
+		mSSE.Unmarshal(txMessage.Data)
+		err = syncer.db.SetSelectiveSlashingEvidenceMsg(store.SelectiveSlashingEvidence{
+			SSE:    mSSE,
+			TxHash: txMessage.TransactionHash,
+		})
+		if err != nil {
+			syncer.log.Error("failed to store SelectiveSlashingEvidenc message", "err", err)
+			return err
+		}
+		syncer.log.Info("success to store SelectiveSlashingEvidenc message", "tx_hash", hexutil.Encode(txMessage.TransactionHash))
 	}
 
 	return nil

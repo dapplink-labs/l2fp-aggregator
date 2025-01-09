@@ -54,7 +54,7 @@ func (f *BabylonHeaderTraversal) NextHeaders(maxSize uint64) ([]types2.Header, e
 		f.latestHeader = &block.Block.Header
 	}
 	latestHeaderJson, _ := json.Marshal(status.SyncInfo.LatestBlockHeight)
-	log.Info("header traversal db latest header: ", "info", string(latestHeaderJson))
+	log.Info("babylon header traversal db latest header: ", "info", string(latestHeaderJson))
 
 	endHeight := new(big.Int).Sub(big.NewInt(status.SyncInfo.LatestBlockHeight), f.blockConfirmationDepth)
 	if endHeight.Sign() < 0 {

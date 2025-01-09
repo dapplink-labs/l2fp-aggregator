@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	types4 "github.com/babylonlabs-io/babylon/x/btccheckpoint/types"
 	"math/big"
 	"math/rand"
 	"net/http"
@@ -239,7 +240,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		}
 	}
 
-	registry := router.NewRegistry(m)
+	registry := router.NewRegistry(m, m.db)
 	r := gin.Default()
 	registry.Register(r)
 
@@ -304,6 +305,12 @@ func (m *Manager) work() {
 				request.TxType = txMsg.Type
 				request.TxHash = txMsg.TransactionHash
 
+				data, err := m.processTxMsgData(txMsg)
+				if err != nil {
+					m.log.Error("failed to process tx msg data", "err", err)
+					return
+				}
+
 				if sig, err := m.db.GetSignature(request.BlockNumber.Int64()); len(sig.Data) > 0 {
 					if err != nil {
 						m.log.Error("failed to get signature by tx hash", "tx_hash", hexutil.Encode(request.TxHash), "err", err)
@@ -348,12 +355,6 @@ func (m *Manager) work() {
 				opts, err := client.NewTransactOpts(m.ctx, m.ethChainID, m.privateKey)
 				if err != nil {
 					m.log.Error("failed to new transact opts", "err", err)
-					return
-				}
-
-				data, err := m.processTxMsgData(txMsg)
-				if err != nil {
-					m.log.Error("failed to process tx msg data", "err", err)
 					return
 				}
 
@@ -433,6 +434,7 @@ func (m *Manager) SignMsgBatch(request types.SignMsgRequest) (*types.SignResult,
 	if signErr != nil {
 		return nil, signErr
 	}
+	//todo 2/3 signer to vote
 	if resp.Signature == nil {
 		return nil, errNotEnoughVoteNode
 	}
@@ -461,12 +463,43 @@ func (m *Manager) processTxMsgData(txMsg store.TxMessage) ([]byte, error) {
 		return mCFP.Marshal()
 	case common2.MsgCreateBTCDelegation:
 		var mCBD types2.MsgCreateBTCDelegation
+		var txInfo types4.TransactionInfo
 		mCBD.Unmarshal(txMsg.Data)
+		if err := m.db.SetCreateBTCDelegationMsg(store.CreateBTCDelegation{
+			CBD:    mCBD,
+			TxHash: txMsg.TransactionHash,
+		}); err != nil {
+			return nil, err
+		}
+		txInfo.Unmarshal(mCBD.StakingTx)
+		btcTx, err := types2.NewBtcTransaction(txInfo.Transaction)
+		if err != nil {
+			m.log.Error("failed to new btc transaction", "err", err)
+			return nil, err
+		}
+		if err = m.db.SetBabylonDelegationKey(txMsg.TransactionHash, []byte(btcTx.Transaction.TxHash().String())); err != nil {
+			m.log.Error("failed to store babylon delegation key", "err", err)
+			return nil, err
+		}
 		return mCBD.Marshal()
 	case common2.MsgCommitPubRandList:
 		var mCPR types3.MsgCommitPubRandList
 		mCPR.Unmarshal(txMsg.Data)
 		return mCPR.Marshal()
+	case common2.MsgBTCUndelegate:
+		var mBU types2.MsgBTCUndelegate
+		mBU.Unmarshal(txMsg.Data)
+		if err := m.db.SetBtcUndelegateMsg(store.BtcUndelegate{
+			BU:     mBU,
+			TxHash: txMsg.TransactionHash,
+		}); err != nil {
+			return nil, err
+		}
+		return mBU.Marshal()
+	case common2.MsgSelectiveSlashingEvidence:
+		var mSSE types2.MsgSelectiveSlashingEvidence
+		mSSE.Unmarshal(txMsg.Data)
+		return mSSE.Marshal()
 	default:
 		return nil, errors.New("unknown babylon tx msg type")
 	}
