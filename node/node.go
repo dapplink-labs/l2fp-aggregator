@@ -140,6 +140,14 @@ func (n *Node) work() {
 				n.log.Error("failed to process CommitPubRandList msg", "err", err)
 				continue
 			}
+			if err := n.synchronizer.ProcessBTCUndelegate(txMsg); err != nil {
+				n.log.Error("failed to process BTCUndelegate msg", "err", err)
+				continue
+			}
+			if err := n.synchronizer.ProcessSelectiveSlashingEvidence(txMsg); err != nil {
+				n.log.Error("failed to process SelectiveSlashingEvidence msg", "err", err)
+				continue
+			}
 		}
 	}
 }
@@ -354,7 +362,7 @@ func (n *Node) SignMessage(requestBody types.SignMsgRequest) (*sign.Signature, e
 			return nil, nil
 		}
 	case common3.MsgCreateBTCDelegation:
-		exist, cBD := n.db.GetCreateBTCDelegationrMsg(requestBody.TxHash)
+		exist, cBD := n.db.GetCreateBTCDelegationMsg(requestBody.TxHash)
 		if exist {
 			bCBD, err := cBD.CBD.Marshal()
 			if err != nil {
@@ -378,6 +386,34 @@ func (n *Node) SignMessage(requestBody types.SignMsgRequest) (*sign.Signature, e
 			byteData := crypto.Keccak256Hash(bCPR)
 			bSign = n.keyPairs.SignMessage(byteData)
 			n.log.Info("success to sign CommitPubRandListMsg", "signature", bSign.String())
+		} else {
+			return nil, nil
+		}
+	case common3.MsgBTCUndelegate:
+		exist, bU := n.db.GetBtcUndelegateMsg(requestBody.TxHash)
+		if exist {
+			bBU, err := bU.BU.Marshal()
+			if err != nil {
+				n.log.Info("failed to marshal BtcUndelegateMsg", "err", err)
+				return nil, err
+			}
+			byteData := crypto.Keccak256Hash(bBU)
+			bSign = n.keyPairs.SignMessage(byteData)
+			n.log.Info("success to sign BtcUndelegateMsg", "signature", bSign.String())
+		} else {
+			return nil, nil
+		}
+	case common3.MsgSelectiveSlashingEvidence:
+		exist, sSE := n.db.GetSelectiveSlashingEvidenceMsg(requestBody.TxHash)
+		if exist {
+			bSSE, err := sSE.SSE.Marshal()
+			if err != nil {
+				n.log.Info("failed to marshal SelectiveSlashingEvidenceMsg", "err", err)
+				return nil, err
+			}
+			byteData := crypto.Keccak256Hash(bSSE)
+			bSign = n.keyPairs.SignMessage(byteData)
+			n.log.Info("success to sign SelectiveSlashingEvidenceMsg", "signature", bSign.String())
 		} else {
 			return nil, nil
 		}

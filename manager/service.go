@@ -34,12 +34,12 @@ func (f *FinalityService) SignatureByBlock(BlockNumber *big.Int) (interface{}, e
 	var bRre []byte
 	if signature.Data == nil {
 		f.log.Warn("the manager has not verified this block", "blockNumber", BlockNumber.Int64())
-		bRre, err = json.Marshal(sdk.SdkResponse{
+		bRre, err = json.Marshal(sdk.SignResponse{
 			Signature: nil,
 			Message:   NotVerifiedBlock.Error(),
 		})
 	} else {
-		bRre, err = json.Marshal(sdk.SdkResponse{
+		bRre, err = json.Marshal(sdk.SignResponse{
 			Signature: signature.Data,
 			Message:   "successful",
 		})
@@ -49,4 +49,22 @@ func (f *FinalityService) SignatureByBlock(BlockNumber *big.Int) (interface{}, e
 		return nil, err
 	}
 	return bRre, nil
+}
+
+func (f *FinalityService) StakerDelegationByAddress(address string) (interface{}, error) {
+	amount, err := f.db.GetBTCDelegateAmount([]byte(address))
+	if err != nil {
+		f.log.Error("failed to staker delegation by address", "err", err)
+		return nil, err
+	}
+	var bStaker []byte
+	bStaker, err = json.Marshal(sdk.StakerDelegationResponse{
+		Amount:  amount,
+		Message: "successful",
+	})
+	if err != nil {
+		f.log.Error("failed to marshal sdk response", "err", err)
+		return nil, err
+	}
+	return bStaker, nil
 }

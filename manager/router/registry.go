@@ -1,12 +1,14 @@
 package router
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/log"
 
 	"github.com/dapplink-labs/l2fp-aggregator/manager/types"
+	"github.com/dapplink-labs/l2fp-aggregator/store"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,11 +17,13 @@ import (
 
 type Registry struct {
 	signService types.SignService
+	db          *store.Storage
 }
 
-func NewRegistry(signService types.SignService) *Registry {
+func NewRegistry(signService types.SignService, db *store.Storage) *Registry {
 	return &Registry{
 		signService: signService,
+		db:          db,
 	}
 }
 
@@ -30,7 +34,7 @@ func (registry *Registry) SignMsgHandler() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, errors.New("invalid request body"))
 			return
 		}
-		if len(request.TxHash) == 0 || request.BlockNumber == nil || request.TxType != "" {
+		if len(request.TxHash) == 0 || request.BlockNumber == nil || request.TxType == "" {
 			c.JSON(http.StatusBadRequest, errors.New("tx_hash, block_number and tx_type must not be nil"))
 			return
 		}
@@ -46,6 +50,38 @@ func (registry *Registry) SignMsgHandler() gin.HandlerFunc {
 		}
 		if _, err = c.Writer.Write(result.Signature.Serialize()); err != nil {
 			log.Error("failed to write signature to response writer", "error", err)
+		}
+	}
+}
+
+func (registry *Registry) StakerDelegationHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var request types.StakerDelegationRequest
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, errors.New("invalid request body"))
+			return
+		}
+		if request.Address == "" {
+			c.JSON(http.StatusBadRequest, errors.New("address must not be nil"))
+			return
+		}
+		var result *types.StakerDelegationResult
+		var err error
+
+		result.Amount, err = registry.db.GetBTCDelegateAmount([]byte(request.Address))
+		if err != nil {
+			c.String(http.StatusInternalServerError, "failed to get staker delegation")
+			log.Error("failed to get staker delegation", "error", err)
+			return
+		}
+		data, err := json.Marshal(result)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "failed to marshal staker delegation")
+			log.Error("failed to marshal staker delegation", "error", err)
+			return
+		}
+		if _, err = c.Writer.Write(data); err != nil {
+			log.Error("failed to write staker delegation to response writer", "error", err)
 		}
 	}
 }

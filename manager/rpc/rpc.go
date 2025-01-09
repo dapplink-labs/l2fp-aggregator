@@ -13,6 +13,10 @@ type FinalityRequest struct {
 	BlockNumber *big.Int `json:"l2_block_number"`
 }
 
+type StakerDelegationRequest struct {
+	Address string `json:"address"`
+}
+
 type FinalityRpcServer struct {
 	FinalityInterface
 }
@@ -53,6 +57,16 @@ func NewAndStartFinalityRpcServer(ctx context.Context, address string, finality 
 func (s *FinalityRpcServer) Finality(req FinalityRequest, reply *interface{}) error {
 	var err error
 	*reply, err = s.SignatureByBlock(req.BlockNumber)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *FinalityRpcServer) Staker(req StakerDelegationRequest, reply *interface{}) error {
+	var err error
+	*reply, err = s.StakerDelegationByAddress(req.Address)
 	if err != nil {
 		return err
 	}

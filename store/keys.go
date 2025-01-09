@@ -5,18 +5,21 @@ import (
 )
 
 var (
-	BabylonBlockHeaderKeyPrefix     = []byte{0x01}
-	EthBlockHeaderKeyPrefix         = []byte{0x02}
-	TxMessageKeyPrefix              = []byte{0x03}
-	EthScannedHeightKeyPrefix       = []byte{0x04}
-	BabylonScannedHeightKeyPrefix   = []byte{0x05}
-	NewFinalityProviderKeyPrefix    = []byte{0x06}
-	CreateBTCDelegationKeyPrefix    = []byte{0x07}
-	CommitPubRandListKeyPrefix      = []byte{0x08}
-	SignatureKeyPrefix              = []byte{0x09}
-	ContractEventKeyPrefix          = []byte{0x10}
-	FinalityRelayerManagerKeyPrefix = []byte{0x11}
-	ActiveMemberKeyPrefix           = []byte{0x12}
+	BabylonBlockHeaderKeyPrefix        = []byte{0x01}
+	EthBlockHeaderKeyPrefix            = []byte{0x02}
+	TxMessageKeyPrefix                 = []byte{0x03}
+	EthScannedHeightKeyPrefix          = []byte{0x04}
+	BabylonScannedHeightKeyPrefix      = []byte{0x05}
+	NewFinalityProviderKeyPrefix       = []byte{0x06}
+	CreateBTCDelegationKeyPrefix       = []byte{0x07}
+	CommitPubRandListKeyPrefix         = []byte{0x08}
+	SignatureKeyPrefix                 = []byte{0x09}
+	ContractEventKeyPrefix             = []byte{0x10}
+	ActiveMemberKeyPrefix              = []byte{0x11}
+	BtcUndelegateKeyPrefix             = []byte{0x12}
+	BTCDelegateAmountKeyPrefix         = []byte{0x13}
+	SelectiveSlashingEvidenceKeyPrefix = []byte{0x14}
+	BabylonDelegationKeyPrefix         = []byte{0x15}
 )
 
 func getBabylonBlockHeaderKey(number int64) []byte {
@@ -57,16 +60,28 @@ func getCommitPubRandListKey(txHash []byte) []byte {
 	return append(CommitPubRandListKeyPrefix, txHash[:]...)
 }
 
+func getBtcUndelegateKey(txHash []byte) []byte {
+	return append(BtcUndelegateKeyPrefix, txHash[:]...)
+}
+
+func getSelectiveSlashingEvidenceKey(txHash []byte) []byte {
+	return append(SelectiveSlashingEvidenceKeyPrefix, txHash[:]...)
+}
+
+func getBTCDelegateAmountKey(address []byte) []byte {
+	return append(BTCDelegateAmountKeyPrefix, address[:]...)
+}
+
+func getBabylonDelegationKey(btcTx []byte) []byte {
+	return append(BabylonDelegationKeyPrefix, btcTx[:]...)
+}
+
 func getEthScannedHeightKey() []byte {
 	return EthScannedHeightKeyPrefix
 }
 
 func getBabylonScannedHeightKey() []byte {
 	return BabylonScannedHeightKeyPrefix
-}
-
-func getFinalityRelayerManagerKey(txHash []byte) []byte {
-	return append(FinalityRelayerManagerKeyPrefix, txHash[:]...)
 }
 
 func getActiveMemberKey() []byte {

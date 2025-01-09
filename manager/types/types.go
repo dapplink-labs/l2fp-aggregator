@@ -13,6 +13,10 @@ type SignMsgRequest struct {
 	TxType      string   `json:"tx_type"`
 }
 
+type StakerDelegationRequest struct {
+	Address string `json:"address"`
+}
+
 type NodeSignRequest struct {
 	Timestamp   int64       `json:"timestamp"`
 	Nodes       []string    `json:"nodes"`
@@ -31,6 +35,10 @@ type SignResult struct {
 	Signature        *sign.G1Point   `json:"signature"`
 	G2Point          *sign.G2Point   `json:"g2_point"`
 	NonSignerPubkeys []*sign.G1Point `json:"non_signer_pubkeys"`
+}
+
+type StakerDelegationResult struct {
+	Amount uint64 `json:"amount"`
 }
 
 type Method string
